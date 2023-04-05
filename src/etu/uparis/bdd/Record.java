@@ -7,7 +7,6 @@ import java.util.Map;
 
 /**
  * A record is a set of key-value pairs.
- * A record is immutable.
  * 
  * @author Skander
  */
@@ -61,6 +60,16 @@ public final class Record {
      */
     public Object get(final String key) {
         return fields.get(key);
+    }
+
+    /**
+     * Set the value of a field.
+     * 
+     * @param key
+     * @param value
+     */
+    public void set(final String key, final Object value) {
+        fields.put(key, value);
     }
 
     @Override

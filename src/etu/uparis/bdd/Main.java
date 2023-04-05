@@ -15,11 +15,20 @@ public final class Main {
         etudiants.setPrimaryKey("id");
 
         // Add records to the table
-        etudiants.addRecord("{ id = 21958561, nom = Bazelet, prenom = Florent, sexe = M }");
+        etudiants.addRecord("{ id = 21957008, nom = Bazelet, prenom = Florent, sexe = M }");
         etudiants.addRecord(new Record(List.of("id", "prenom", "age", "sexe"), List.of("21957008", "Skander", 22, "M")));
 
         // Add the table to the database
         database.addTable(etudiants);
+
+        // Print the database
+        System.out.println(database);
+
+        System.out.println("\nApplying EGD...\n");
+
+        etudiants.applyEGD(() -> {
+            return List.of(List.of("id"), List.of("nom", "prenom", "age", "sexe"));
+        });
 
         // Print the database
         System.out.println(database);

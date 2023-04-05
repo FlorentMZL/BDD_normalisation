@@ -61,6 +61,35 @@ public final class Table {
         return record;
     }
 
+    public void applyEGD(final EGD egd) {
+        final var values = egd.values();
+        final var leftHandSide = values.get(0);
+        final var rightHandSide = values.get(1);
+        for (final var firstRecord : this.records) {
+            for (final var secondRecord : this.records) {
+                if (firstRecord == secondRecord) {
+                    continue;
+                }
+                for (final var leftHandeSideValue : leftHandSide) {
+                    if (this.keys.contains(leftHandeSideValue)) {
+                        final var firstRecordValue = firstRecord.get(leftHandeSideValue);
+                        final var secondRecordValue = secondRecord.get(leftHandeSideValue);
+                        if (firstRecordValue == null || secondRecordValue == null) {
+                            continue;
+                        }
+                        if (firstRecordValue.equals(secondRecordValue)) {
+                            for (final var rightHandSideValue : rightHandSide) {
+                                if (this.keys.contains(rightHandSideValue)) {
+                                    secondRecord.set(rightHandSideValue, firstRecord.get(rightHandSideValue));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public String getName() {
         return name;
     }
