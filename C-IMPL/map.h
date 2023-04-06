@@ -1,9 +1,7 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "common.h"
 
 typedef struct map_entry {
     void* key;

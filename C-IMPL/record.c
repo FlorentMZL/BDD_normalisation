@@ -6,6 +6,19 @@ record_t* record_create() {
     return record;
 }
 
+record_t* record_from_representation(char* representation) {
+    // Parse representation in the form of "{ key1 = value1, key2 = value2, ... }"
+    record_t* record = record_create();
+    char* representation_copy = malloc(strlen(representation) + 1);
+    strcpy(representation_copy, representation);
+    char** tokens = split(representation_copy, " ");
+    // Skip first token, which is "{"
+    for (size_t i = 1; i < strlen(representation_copy); i++) {
+        
+    }
+    return record;
+}
+
 void record_destroy(record_t* record) {
     map_destroy(record->fields);
     free(record);

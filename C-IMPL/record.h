@@ -8,6 +8,7 @@ typedef struct record {
 } record_t;
 
 record_t* record_create();
+record_t* record_from_representation(char* representation);
 void record_destroy(record_t* record);
 void record_set(record_t* record, char* key, char* value);
 char* record_get(record_t* record, char* key);
