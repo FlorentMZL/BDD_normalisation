@@ -12,11 +12,10 @@ import java.util.Map;
  */
 public final class Record {
     private final Map<String, Object> fields;
-    
+    private  String table=""; // The name of the table to which the record belongs
     public Record(final Map<String, Object> fields) {
         this.fields = fields;
     }
-
     /**
      * Create a record from a list of keys and a list of values.
      * 
@@ -58,10 +57,15 @@ public final class Record {
      * @param key
      * @return the value of the field
      */
+    public void setTable(String table){
+        this.table=table;
+    }
     public Object get(final String key) {
         return fields.get(key);
     }
-
+    public String getTable(){
+        return this.table;
+    }
     /**
      * Set the value of a field.
      * 
