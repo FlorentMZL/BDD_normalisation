@@ -61,6 +61,7 @@ public final class Table {
             throw new IllegalArgumentException("The primary key must be set");
         }
         this.records.add(record);
+        record.setTable(this.name);
         return record;
     }
 
@@ -75,15 +76,16 @@ public final class Table {
             throw new IllegalArgumentException("The primary key must be set");
         }
         this.records.add(record);
+        record.setTable(this.name);
         return record;
     }
-
+    
     /**
      * Apply the given EGD to the table.
      * 
      * @param egd the EGD to apply
      */
-    public void applyEGD(final EGD egd) {
+    /*public void applyEGD(final EGD egd) {
         final var values = egd.values();
         final var leftHandSide = values.get(0);
         final var rightHandSide = values.get(1);
@@ -113,7 +115,7 @@ public final class Table {
             }
         }
     }
-
+    
     /**
      * @return the name of the table
      */
