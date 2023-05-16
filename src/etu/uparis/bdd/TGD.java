@@ -14,7 +14,9 @@ public class TGD extends Constraint{
     }
 
 
-
+    public Set<Set<Record>> getApplied(){
+        return this.applied;
+    }
     public void addApplied(Set<Record> s){
         this.applied.add(s);
     }

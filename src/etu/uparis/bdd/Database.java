@@ -262,20 +262,24 @@ public final class Database {
         }
     }
     public void obliviousChase(List<TGD> contraintes, int milliseconds){
+        int count = 0; 
+        int countApplied = 0 ;
         long startTime = System.currentTimeMillis();
         Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
-        while(System.currentTimeMillis()-startTime <milliseconds * 1000){
+        
+        while(System.currentTimeMillis()-startTime <milliseconds * 1000&& countApplied < contraintes.size()){
+            count = 0; 
             for (Table t : this.getTables()){
                 alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
             }
-        } 
+        
         for (final var tgd : contraintes) {
             List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
             Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for(var b: tgd.getBody()){
-
-                    if (alltuples.get(b.get(0))!= null && alltuples.get(b.get(0)).size()!=0){
-                        ontuples.add(alltuples.get(b.get(0)));
+                    System.out.println("On regarde la table "+b.get(0));
+                    if (alltuples.get(beforeequal(b.get(0)))!= null && alltuples.get(beforeequal(b.get(0))).size()!=0){
+                        ontuples.add(alltuples.get(beforeequal(b.get(0))));
                     }
                    
                 }
@@ -325,11 +329,24 @@ public final class Database {
                                     }
                                 }
                                 tgd.addApplied(tuplesatisfying);
+                                for(var a : tgd.getApplied()){
+                                    System.out.println("On a appliqué la TGD "+tgd+" sur l'ensemble de tuples "+a);
+                                    
+                                }
+                            }
+                        }
+                        else{
+                            count +=1; 
+                            if (count == applyOnTuples.size()){
+                                countApplied +=1; 
                             }
                         }
                     }
                 }
+            }
         }
+    
+
     }
 
 
