@@ -1,5 +1,4 @@
 package etu.uparis.bdd;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,7 @@ import java.util.Set;
 public final class Database {
     private String name;
     private final Set<Table> tables;
-
+    static int nullvalue = 0; //pas super super niveau programmation mais bon c'est pour faire des valeurs nulls différentes
     /**
      * Create a new database with the given name.
      * 
@@ -108,6 +107,7 @@ public final class Database {
 
 
     public void standardChase(List<Constraint> constraints) {
+        
         Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
         for (Table t : this.getTables()){
             alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
@@ -124,8 +124,8 @@ public final class Database {
                 Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for(var b: tgd.getBody()){
 
-                    if (alltuples.get(b.get(0))!= null && alltuples.get(b.get(0)).size()!=0){
-                        ontuples.add(alltuples.get(b.get(0)));
+                    if (alltuples.get(beforeequal(b.get(0)))!= null && alltuples.get(beforeequal(b.get(0))).size()!=0){
+                        ontuples.add(alltuples.get(beforeequal(b.get(0))));
                     }
                    
                 }
@@ -136,15 +136,16 @@ public final class Database {
                         if (!(tgd.isApplied(tuplesatisfying))){//Si l'ensemble n'a pas été deja satisfait : 
                             for (int i = 0; i< tgd.getHead().size(); i++){//Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
-                                if (alltuples.get(h.get(0)) == null|| alltuples.get(h.get(0)).size()==0){//Si la table est vide, alors il faut créer un record pour satisfaire la tête 
-                                    alltuples.put(h.get(0), new HashSet<Record>());
+                                if (alltuples.get(beforeequal(h.get(0))) == null|| alltuples.get(beforeequal(h.get(0))).size()==0){//Si la table est vide, alors il faut créer un record pour satisfaire la tête 
+                                    alltuples.put(beforeequal(h.get(0)), new HashSet<Record>());
                                     List <String> keys = new ArrayList<String>();
                                     List <Object> values = new ArrayList<Object>();
                                     for(int j = 1; j<h.size(); j++){
                                         //String s = "nullvalue";
                                         //  Object o = s;  
-                                        keys.add(h.get(j));
-                                        values.add("nullvalue");
+                                        keys.add(beforeequal(h.get(j)));
+                                        values.add("nullvalue"+nullvalue);
+                                        nullvalue++; 
                                     }
                                     boolean egal = true; 
                                         for(int j = 1; j<h.size(); j++){//Pour chaque clé de la tête
@@ -152,10 +153,12 @@ public final class Database {
                                         for (var b : tgd.getBody()){//on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
                                             for (var t : b){//pour chaque string dans la partie du corps qu'on regarde
                                                 if (egal == false) break; 
-                                                if  (t.equals(h.get(j))){//si il est egal à la clé
+                                                System.out.println("On regarde si la clé "+afterequal(t)+" est égale à la clé "+afterequal(h.get(j)));
+                                                if  (afterequal(t).equals(afterequal(h.get(j)))){//si il est egal à la clé
+                                                    System.out.println("On a trouvé une clé égale à la clé de la tête");
                                                     for (var tuple : tuplesatisfying){//On cherche le record qui appartient la table concernée 
-                                                        if (tuple.getTable().equals(b.get(0))){
-                                                            values.set(j-1, tuple.get(h.get(j)));//On met a jour la valeur liée a la clé 
+                                                        if (tuple.getTable().equals(beforeequal(b.get(0)))){
+                                                            values.set(j-1, tuple.get(beforeequal(h.get(j))));//On met a jour la valeur liée a la clé 
                                                             egal = false; 
                                                             break;
                                                         }
@@ -165,20 +168,20 @@ public final class Database {
                                         }
                                     }
                                 Record r = new Record(keys, values);
-                                alltuples.get(h.get(0)).add(r);//ajouter le record à l'ensemble des records de la table
+                                alltuples.get(beforeequal(h.get(0))).add(r);//ajouter le record à l'ensemble des records de la table
                                 System.out.println("On a ajouté le record "+r+" à la table "+h.get(0));
                                 for (var tabl : this.getTables()){ //ajouter le record à la base de données
-                                    if (tabl.getName().equals(h.get(0))){
+                                    if (tabl.getName().equals(beforeequal(h.get(0)))){
                                         tabl.addRecord(r);
                                     }
                                 }
                                 tgd.addApplied(tuplesatisfying);
                             }
                             else {
-                                int comptSat = 0; 
+                               
                                 boolean satisfait = false; 
                                 boolean egal = true; 
-                                for ( var t : alltuples.get(h.get(0))){//Pour les tuples correspondant à la table concernée dans une partie de la tête : 
+                                for ( var t : alltuples.get(beforeequal(h.get(0)))){//Pour les tuples correspondant à la table concernée dans une partie de la tête : 
                                     egal = true;
                                     for(int j = 1; j<h.size(); j++){//pour chaque clé de cette partie de la tête 
                                         if (egal == false)break;
@@ -187,11 +190,11 @@ public final class Database {
                                             for(var cle : b){//pour chaque clé du tuple dans le corps 
                                                 if (egal == false) break;
                                                 if (satisfait)break; 
-                                                if  (cle.equals(h.get(j))){//si la clé est égale à la clé de la tete
+                                                if  (afterequal(cle).equals(afterequal(h.get(j)))){//si la clé est égale à la clé de la tete
                                                     for(var tuple : tuplesatisfying){//Pour chaque tuple dans les tuples qui satisfont le corps 
                                                         if (satisfait) break; 
-                                                        if (tuple.getTable().equals(b.get(0))){//si ce tuple appartient à la table concernée 
-                                                            if (tuple.get(h.get(j))!= t.get(h.get(j))){ //si la valeur de la clé dans le tuple de la tete est différente de la valeur de la clé dans le tuple du corps
+                                                        if (tuple.getTable().equals(beforeequal(b.get(0)))){//si ce tuple appartient à la table concernée 
+                                                            if (tuple.get(beforeequal(h.get(j)))!= t.get(beforeequal(h.get(j)))){ //si la valeur de la clé dans le tuple de la tete est différente de la valeur de la clé dans le tuple du corps
                                                                 egal = false; //la contrainte n'est pas satisfaite par le tuple t 
                                                                 satisfait = false;
                                                                 break;
@@ -214,8 +217,9 @@ public final class Database {
                                 for(int j = 1; j<h.size(); j++){
                                     //String s = "nullvalue";
                                     //  Object o = s;  
-                                    keys.add(h.get(j));
-                                    values.add("nullvalue");
+                                    keys.add(beforeequal(h.get(j)));
+                                    values.add("nullvalue"+  nullvalue);
+                                    nullvalue++;
                                 }
                                 egal = true; 
                                     for(int j = 1; j<h.size(); j++){//Pour chaque clé de la tête
@@ -223,10 +227,10 @@ public final class Database {
                                     for (var b : tgd.getBody()){//on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
                                         for (var t : b){//pour chaque string dans la partie du corps qu'on regarde
                                             if (egal == false) break; 
-                                            if  (t.equals(h.get(j))){//si il est egal à la clé
+                                            if  (afterequal(t).equals(afterequal(h.get(j)))){//si il est egal à la clé
                                                 for (var tuple : tuplesatisfying){//On cherche le record qui appartient la table concernée 
-                                                    if (tuple.getTable().equals(b.get(0))){
-                                                        values.set(j-1, tuple.get(h.get(j)));//On met a jour la valeur liée a la clé 
+                                                    if (tuple.getTable().equals(beforeequal(b.get(0)))){
+                                                        values.set(j-1, tuple.get(beforeequal(h.get(j))));//On met a jour la valeur liée a la clé 
                                                         egal = false; 
                                                         break;
                                                     }
@@ -236,11 +240,11 @@ public final class Database {
                                     }
                                 }
                                 Record r = new Record(keys, values);
-                                alltuples.get(h.get(0)).add(r);//ajouter le record à l'ensemble des records de la table
+                                alltuples.get(beforeequal(h.get(0))).add(r);//ajouter le record à l'ensemble des records de la table
                                 System.out.println("On a ajouté le record "+r+" à la table "+h.get(0));
                                 
                                 for (var tabl : this.getTables()){ //ajouter le record à la base de données
-                                    if (tabl.getName().equals(h.get(0))){
+                                    if (tabl.getName().equals(beforeequal(h.get(0)))){
                                         tabl.addRecord(r);
                                     }
                                 }
@@ -256,6 +260,86 @@ public final class Database {
             //EGD 
         }
         }
+    }
+    public void obliviousChase(List<TGD> contraintes, int milliseconds){
+        long startTime = System.currentTimeMillis();
+        Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
+        while(System.currentTimeMillis()-startTime <milliseconds * 1000){
+            for (Table t : this.getTables()){
+                alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
+            }
+        } 
+        for (final var tgd : contraintes) {
+            List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
+            Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
+                for(var b: tgd.getBody()){
+
+                    if (alltuples.get(b.get(0))!= null && alltuples.get(b.get(0)).size()!=0){
+                        ontuples.add(alltuples.get(b.get(0)));
+                    }
+                   
+                }
+                if (ontuples.size() == tgd.getBody().size()){//Si on a autant de tables dans le corps de la TGD que de tables dans le dictionnaire : alors le corps est satisfait
+                    applyOnTuples = genererCombinaisons(ontuples);
+                    for (var tuplesatisfying : applyOnTuples){//Pour chaque ensemble de tuples qui satisfait le corps de la TGD
+                //On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
+                        if (!(tgd.isApplied(tuplesatisfying))){//Si l'ensemble n'a pas été deja satisfait : 
+                            for (int i = 0; i< tgd.getHead().size(); i++){//Pour chaque table de la tête
+                                var h = tgd.getHead().get(i);
+                                if (alltuples.get(beforeequal(h.get(0))) == null){
+                                    alltuples.put(beforeequal(h.get(0)), new HashSet<Record>());
+                                }
+                                List <String> keys = new ArrayList<String>();
+                                List <Object> values = new ArrayList<Object>();
+                                for(int j = 1; j<h.size(); j++){
+                                    //String s = "nullvalue";
+                                    //  Object o = s;  
+                                    keys.add(beforeequal(h.get(j)));
+                                    values.add("nullvalue"+nullvalue);
+                                    nullvalue++; 
+                                }
+                                boolean egal = true; 
+                                for(int j = 1; j<h.size(); j++){//Pour chaque clé de la tête 
+                                    egal = true;                                       
+                                    for (var b : tgd.getBody()){//on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
+                                        for (var t : b){//pour chaque string dans la partie du corps qu'on regarde
+                                            if (egal == false) break; 
+                                            if  (afterequal(t).equals(afterequal(h.get(j)))){//si il est egal à la clé
+                                                for (var tuple : tuplesatisfying){//On cherche le record qui appartient la table concernée 
+                                                    if (tuple.getTable().equals(beforeequal(b.get(0)))){
+                                                        values.set(j-1, tuple.get(beforeequal(h.get(j))));//On met a jour la valeur liée a la clé 
+                                                        egal = false; 
+                                                        break;
+                                                    }
+                                                }
+                                            }                                    
+                                        }
+                                    }
+                                }
+                                Record r = new Record(keys, values);
+                                alltuples.get(beforeequal(h.get(0))).add(r);//ajouter le record à l'ensemble des records de la table
+                                System.out.println("On a ajouté le record "+r+" à la table "+h.get(0));
+                                for (var tabl : this.getTables()){ //ajouter le record à la base de données
+                                    if (tabl.getName().equals(beforeequal(h.get(0)))){
+                                        tabl.addRecord(r);
+                                    }
+                                }
+                                tgd.addApplied(tuplesatisfying);
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
+
+    private static String afterequal(String s){
+        String[] parts = s.split("=");
+        return parts[1];
+    }
+    private static String beforeequal(String s){
+        String[] parts = s.split("=");
+        return parts[0];
     }
     private static Set<Set<Record>> genererCombinaisons (List<Set<Record>> ontuples){
         Set<Set<Record>> combinaisons = new HashSet<Set<Record>>();
