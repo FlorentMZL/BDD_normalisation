@@ -110,58 +110,60 @@ public final class Database {
     public void standardChase(List<Constraint> constraints) {
         Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
         for (Table t : this.getTables()){
-            alltuples.put(t.getName(), t.getRecords());
+            alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
         }
 
 
         for (final var constraint : constraints) {
+
+            //TGD  : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
             if (constraint instanceof TGD){
                 TGD tgd = (TGD) constraint; 
-                List<Set<Record>> ontuples = new ArrayList<Set<Record>>();
-                Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();
+                System.out.println("TGD : " + tgd);
+                List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
+                Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for(var b: tgd.getBody()){
+
                     if (alltuples.get(b.get(0))!= null && alltuples.get(b.get(0)).size()!=0){
                         ontuples.add(alltuples.get(b.get(0)));
                     }
-                    else{
-                        break; 
-                    }
+                   
                 }
-                if (ontuples.size() == tgd.getBody().size()){
+                if (ontuples.size() == tgd.getBody().size()){//Si on a autant de tables dans le corps de la TGD que de tables dans le dictionnaire : alors le corps est satisfait
                     applyOnTuples = genererCombinaisons(ontuples);
-                }//On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
-                for (var tuplesatisfying : applyOnTuples){//Pour chaque ensemble de tuples qui satisfait le corps de la TGD
-                    if (!(tgd.isApplied(tuplesatisfying))){//Si l'ensemble n'a pas été deja satisfait : 
-                        for (int i = 0; i< tgd.getHead().size(); i++){//Pour chaque table de la tête
-                            var h = tgd.getHead().get(i);
-                            if (alltuples.get(h.get(0)) == null|| alltuples.get(h.get(0)).size()==0){//Si la table est vide, alors il faut créer un record pour satisfaire la tête 
-                                alltuples.put(h.get(0), new HashSet<Record>());
-                                List <String> keys = new ArrayList<String>();
-                                List <Object> values = new ArrayList<Object>();
-                                for(int j = 1; j<h.size(); j++){
-                                    //String s = "nullvalue";
-                                    //  Object o = s;  
-                                    keys.add(h.get(j));
-                                    values.add("nullvalue");
-                                }
-                                boolean egal = true; 
-                                    for(int j = 1; j<h.size(); j++){//Pour chaque clé de la tête
-                                    egal = true; 
-                                    for (var b : tgd.getBody()){//on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
-                                        for (var t : b){//pour chaque string dans la partie du corps qu'on regarde
-                                            if (egal == false) break; 
-                                            if  (t.equals(h.get(j))){//si il est egal à la clé
-                                                for (var tuple : tuplesatisfying){//On cherche le record qui appartient la table concernée 
-                                                    if (tuple.getTable().equals(b.get(0))){
-                                                        values.set(j-1, tuple.get(h.get(j)));//On met a jour la valeur liée a la clé 
-                                                        egal = false; 
-                                                        break;
+                //On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
+                    for (var tuplesatisfying : applyOnTuples){//Pour chaque ensemble de tuples qui satisfait le corps de la TGD
+                        if (!(tgd.isApplied(tuplesatisfying))){//Si l'ensemble n'a pas été deja satisfait : 
+                            for (int i = 0; i< tgd.getHead().size(); i++){//Pour chaque table de la tête
+                                var h = tgd.getHead().get(i);
+                                if (alltuples.get(h.get(0)) == null|| alltuples.get(h.get(0)).size()==0){//Si la table est vide, alors il faut créer un record pour satisfaire la tête 
+                                    alltuples.put(h.get(0), new HashSet<Record>());
+                                    List <String> keys = new ArrayList<String>();
+                                    List <Object> values = new ArrayList<Object>();
+                                    for(int j = 1; j<h.size(); j++){
+                                        //String s = "nullvalue";
+                                        //  Object o = s;  
+                                        keys.add(h.get(j));
+                                        values.add("nullvalue");
+                                    }
+                                    boolean egal = true; 
+                                        for(int j = 1; j<h.size(); j++){//Pour chaque clé de la tête
+                                        egal = true; 
+                                        for (var b : tgd.getBody()){//on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
+                                            for (var t : b){//pour chaque string dans la partie du corps qu'on regarde
+                                                if (egal == false) break; 
+                                                if  (t.equals(h.get(j))){//si il est egal à la clé
+                                                    for (var tuple : tuplesatisfying){//On cherche le record qui appartient la table concernée 
+                                                        if (tuple.getTable().equals(b.get(0))){
+                                                            values.set(j-1, tuple.get(h.get(j)));//On met a jour la valeur liée a la clé 
+                                                            egal = false; 
+                                                            break;
+                                                        }
                                                     }
-                                                }
-                                            }                                    
+                                                }                                    
+                                            }
                                         }
                                     }
-                                }
                                 Record r = new Record(keys, values);
                                 alltuples.get(h.get(0)).add(r);//ajouter le record à l'ensemble des records de la table
                                 System.out.println("On a ajouté le record "+r+" à la table "+h.get(0));
@@ -236,6 +238,7 @@ public final class Database {
                                 Record r = new Record(keys, values);
                                 alltuples.get(h.get(0)).add(r);//ajouter le record à l'ensemble des records de la table
                                 System.out.println("On a ajouté le record "+r+" à la table "+h.get(0));
+                                
                                 for (var tabl : this.getTables()){ //ajouter le record à la base de données
                                     if (tabl.getName().equals(h.get(0))){
                                         tabl.addRecord(r);
@@ -248,6 +251,10 @@ public final class Database {
                     tgd.addApplied(tuplesatisfying);
                 }
             }
+        }
+        else{
+            //EGD 
+        }
         }
     }
     private static Set<Set<Record>> genererCombinaisons (List<Set<Record>> ontuples){

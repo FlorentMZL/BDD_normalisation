@@ -19,7 +19,8 @@ public final class Main {
         t3.setPrimaryKey("nationalité");
         students.setPrimaryKey("id");
         enseignantsparticulier.setPrimaryKey("nom");
-        TGD tgd = new TGD(List.of(List.of ("t3", "parent", "nationalité"), List.of("enseignantparticulier", "nom", "matiere", "id", "age")), List.of (List.of("students", "id", "surname", "name", "age", "gender"), List.of("t2", "matiere", "nationalité"))); 
+        TGD tgd1 = new TGD(List.of (List.of("t3", "parent", "nationalité")), List.of(List.of("enseignantparticulier", "nom", "matiere", "id", "age")));
+        TGD tgd2 = new TGD(List.of(List.of ("t3", "parent", "nationalité"), List.of("enseignantparticulier", "nom", "matiere", "id", "age")), List.of (List.of("students", "id", "surname", "name", "age", "gender"), List.of("t2", "matiere", "nationalité"))); 
 
        // Add records to the table
         t3.addRecord("{ parent = prout, nationalité = français }");
@@ -37,8 +38,9 @@ public final class Main {
         System.out.println(database);
 
         System.out.println("\nbody satisfied ? \n");
-        System.out.println(tgd.satisfyingBody(database));
-        database.standardChase(List.of(tgd));        
+        System.out.println(tgd1.satisfyingBody(database));
+        database.standardChase(List.of(tgd1, tgd2));
+
        // System.out.println("\nApplying EGD...\n");
 
        /* students.applyEGD(() -> {
