@@ -19,8 +19,8 @@ public final class Main {
         t3.setPrimaryKey("nationalité");
         students.setPrimaryKey("id");
         enseignantsparticulier.setPrimaryKey("nom");
-        TGD tgd1 = new TGD(List.of (List.of("t3", "parent", "nationalité")), List.of(List.of("enseignantparticulier", "nom", "matiere", "id", "age")));
-        TGD tgd2 = new TGD(List.of(List.of ("t3", "parent", "nationalité"), List.of("enseignantparticulier", "nom", "matiere", "id", "age")), List.of (List.of("students", "id", "surname", "name", "age", "gender"), List.of("t2", "matiere", "nationalité"))); 
+        TGD tgd1 = new TGD(List.of (List.of("t3=t3", "parent=parent1", "nationalité=nationalité1")), List.of(List.of("enseignantparticulier=enseignantparticulier1", "nom=nom1", "matiere=matiere1", "id=id1", "age=age1")));
+        TGD tgd2 = new TGD(List.of(List.of ("t3=t3", "parent=parent1", "nationalité=nationalité1"), List.of("enseignantparticulier=enseignantparticulier1", "nom=nom1", "matiere=matiere1", "id=id1", "age=age1")), List.of (List.of("students=students1", "id=id2", "surname=surname1", "name=name1", "age=age1", "gender=gender1"), List.of("t2=t2", "matiere=matiere1", "nationalité=nationalité1"))); 
 
        // Add records to the table
         t3.addRecord("{ parent = prout, nationalité = français }");
@@ -39,8 +39,8 @@ public final class Main {
 
         System.out.println("\nbody satisfied ? \n");
         System.out.println(tgd1.satisfyingBody(database));
-        database.standardChase(List.of(tgd1, tgd2));
-
+        //database.standardChase(List.of(tgd1, tgd2));
+        database.obliviousChase(List.of(tgd1, tgd2), 2);
        // System.out.println("\nApplying EGD...\n");
 
        /* students.applyEGD(() -> {
