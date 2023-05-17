@@ -107,7 +107,11 @@ public final class Database {
 
 
     public void standardChase(List<Constraint> constraints) {
-        
+        int countApplied = 0;//Compteur de contraintes qui satisfont la base de données
+        int count = 0 ; //Compteur de tuples qui satisfont une certaine contrainte
+        while(countApplied < constraints.size()){
+        count = 0; 
+        countApplied=0; 
         Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
         for (Table t : this.getTables()){
             alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
@@ -115,36 +119,37 @@ public final class Database {
 
 
         for (final var constraint : constraints) {
-
+            count = 0; 
             //TGD  : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
             if (constraint instanceof TGD){
+              
                 TGD tgd = (TGD) constraint; 
                 System.out.println("TGD : " + tgd);
                 List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
-                Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
+                Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//Liste des ensembles de tuples qui satisfont le corps de la TGD
                 for(var b: tgd.getBody()){
 
                     if (alltuples.get(beforeequal(b.get(0)))!= null && alltuples.get(beforeequal(b.get(0))).size()!=0){
-                        ontuples.add(alltuples.get(beforeequal(b.get(0))));
+                        ontuples.add(alltuples.get(beforeequal(b.get(0))));//Ajout des tables concernées par le corps dans l'ensemble
                     }
                    
                 }
                 if (ontuples.size() == tgd.getBody().size()){//Si on a autant de tables dans le corps de la TGD que de tables dans le dictionnaire : alors le corps est satisfait
-                    applyOnTuples = genererCombinaisons(ontuples);
-                //On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
+                    applyOnTuples = genererCombinaisons(ontuples);//Generation de tous les ensembles de tuples qui peuvent satisfaire le corps de la TGD
+                
                     for (var tuplesatisfying : applyOnTuples){//Pour chaque ensemble de tuples qui satisfait le corps de la TGD
                         if (!(tgd.isApplied(tuplesatisfying))){//Si l'ensemble n'a pas été deja satisfait : 
                             for (int i = 0; i< tgd.getHead().size(); i++){//Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
                                 if (alltuples.get(beforeequal(h.get(0))) == null|| alltuples.get(beforeequal(h.get(0))).size()==0){//Si la table est vide, alors il faut créer un record pour satisfaire la tête 
                                     alltuples.put(beforeequal(h.get(0)), new HashSet<Record>());
-                                    List <String> keys = new ArrayList<String>();
+                                    List <String> keys = new ArrayList<String>();//Creation du record à ajouter
                                     List <Object> values = new ArrayList<Object>();
                                     for(int j = 1; j<h.size(); j++){
                                         //String s = "nullvalue";
                                         //  Object o = s;  
-                                        keys.add(beforeequal(h.get(j)));
-                                        values.add("nullvalue"+nullvalue);
+                                        keys.add(beforeequal(h.get(j)));//On met les clés 
+                                        values.add("nullvalue"+nullvalue);//On met toutes les valeurs à null. On egalisera celles qu'il faut en dessous
                                         nullvalue++; 
                                     }
                                     boolean egal = true; 
@@ -176,6 +181,7 @@ public final class Database {
                                     }
                                 }
                                 tgd.addApplied(tuplesatisfying);
+
                             }
                             else {
                                
@@ -253,13 +259,19 @@ public final class Database {
                         }
                     }
                     tgd.addApplied(tuplesatisfying);
+                    count+=1;//Si le tuple a déjà été satisfait par la TGD
                 }
             }
+            if (count == applyOnTuples.size()){//Si la TGD a été appliquée à tous les tuples qui la satisfont
+                countApplied +=1; 
+            }
+
         }
         else{
             //EGD 
         }
         }
+    }
     }
     public void obliviousChase(List<TGD> contraintes, int milliseconds){
         int count = 0; 
@@ -269,11 +281,13 @@ public final class Database {
         
         while(System.currentTimeMillis()-startTime <milliseconds * 1000&& countApplied < contraintes.size()){
             count = 0; 
+            countApplied=0; 
             for (Table t : this.getTables()){
                 alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
             }
         
         for (final var tgd : contraintes) {
+            count = 0; 
             List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
             Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for(var b: tgd.getBody()){
@@ -335,13 +349,14 @@ public final class Database {
                                 }
                             }
                         }
-                        else{
+                        else{//Si le tuple a déjà été satisfait par la TGD
                             count +=1; 
-                            if (count == applyOnTuples.size()){
-                                countApplied +=1; 
-                            }
+                            
                         }
                     }
+                }
+                if (count == applyOnTuples.size()){
+                    countApplied +=1; 
                 }
             }
         }
@@ -352,14 +367,16 @@ public final class Database {
         int count = 0; 
         int countApplied = 0 ;
         Map<String, Set<Record>> alltuples = new HashMap<String, Set<Record>>();
-        int bb = 0; 
-        while(countApplied < contraintes.size()&& bb !=10){
+        
+        while(countApplied < contraintes.size()){
             count = 0; 
+            countApplied=0;
             for (Table t : this.getTables()){
                 alltuples.put(t.getName(), t.getRecords());//Creation d'un dictionnaire qui associe à chaque table l'ensemble de ses tuples pour pouvoir manipuler facilemlent
             }
-            bb++;
+        
         for (final var tgd : contraintes) {
+            count = 0; 
             List<Set<Record>> ontuples = new ArrayList<Set<Record>>();//Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
             Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for(var b: tgd.getBody()){
@@ -443,14 +460,16 @@ public final class Database {
                                 }
                             }
                         }
-                        else{
+                        else{//Si le tuple a déjà été satisfait par la TGD
                             count +=1; 
-                            if (count == applyOnTuples.size()){
-                                countApplied +=1; 
-                            }
+                           
                         }
                     }
                 }
+                if (count == applyOnTuples.size()){//Si tous les tuples ont été satisfaits par la TGD
+                    countApplied +=1; 
+                }
+                
             }
         }
         

@@ -39,9 +39,9 @@ public final class Main {
 
         System.out.println("\nbody satisfied ? \n");
         System.out.println(tgdOblivious.satisfyingBody(database));
-        //database.standardChase(List.of(tgd1, tgd2));
+        database.standardChase(List.of(tgd1, tgd2, tgdOblivious));
         //database.obliviousChase(List.of( tgdOblivious), 2);
-        database.obliviousSkolemChase(List.of(tgdOblivious));
+        //database.obliviousSkolemChase(List.of(tgdOblivious));
         // System.out.println("\nApplying EGD...\n");
 
        /* students.applyEGD(() -> {

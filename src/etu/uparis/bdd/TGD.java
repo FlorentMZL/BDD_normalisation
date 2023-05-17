@@ -4,8 +4,12 @@ import java.util.List;
 import java.util.Set;
 
 public class TGD extends Constraint{
-    private List<List<String>> body; //liste de la forme ((NomTable1, NomAttribut1, NomAttribut2, ...), (NomTable2, NomAttribut1, NomAttribut2, ...), ...). Represente conjonction de tables. 
-    private List<List<String>> head; 
+    private List<List<String>> body; //liste de la forme ((NomTable1=Nomtable1', NomAttribut1=Nomattribut1', NomAttribut2=Nomattribut2', ...), (NomTable2= Nomtable2', NomAttribut1=NomAttribut1', NomAttribut2=NomAttribut2', ...), ...). Represente conjonction de tables. 
+                                     //les "=" servent à distinguer deux tuples de la même table qui auraient des valeurs différentes pour une même clé.
+                                     // La tête devrait donc savoir lequel des deux egaliser si elle doit egaliser un des deux. 
+    
+    
+    private List<List<String>> head; //Même forme que le body.
     private Set<Set<Record>> applied; //liste des ensembles de tuples auxquels la contrainte a déjà été appliquée 
     public TGD(List<List<String>> body, List<List<String>> head){
         this.body = body;
