@@ -127,94 +127,51 @@ public final class Database {
             if (constraint instanceof TGD)
                 totalTGDs++;
         }
-
         var appliedTGDs = 0; // Nombre de contraintes TGD appliquées à la base de données
-        var loopCount = 0; // Nombre de contraintes TGD appliquées à la base de données lors d'un tour de
-                           // boucle
+        var loopCount = 0; // Nombre de contraintes TGD appliquées à la base de données lors d'un tour de boucle
         boolean onceStabilized = false, twiceStabilized = false;
-
         while (!onceStabilized && !twiceStabilized && appliedTGDs != totalTGDs) {
             loopCount = 0;
             appliedTGDs = 0;
-
             var allTuples = new HashMap<String, Set<Record>>();
             for (var table : this.getTables())
-                allTuples.put(table.getName(), table.getRecords()); // Dictionnaire qui associe à chaque table
-                                                                    // l'ensemble de ses tuples pour faciliter les
-                                                                    // manipulations
-
+                allTuples.put(table.getName(), table.getRecords()); // Dictionnaire qui associe à chaque table l'ensemble de ses tuples pour faciliter les manipulations
             for (final var constraint : constraints) {
                 loopCount = 0;
-                if (constraint instanceof TGD) { // TGD : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
+                if (constraint instanceof TGD) {
                     TGD tgd = (TGD) constraint;
-                    List<Set<Record>> tupleSets = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui
-                                                                                // satisfont une partie du corps de la
-                                                                                // TGD
-                    Set<Set<Record>> satisfyingTuples = new HashSet<Set<Record>>(); // Liste des ensembles de tuples qui
-                                                                                    // satisfont le corps de la TGD
-                    for (var b : tgd.getBody()) { // Pour chaque table dans le corps de la TGD
+                    List<Set<Record>> tupleSets = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui satisfont une partie du corps de la TGD
+                    Set<Set<Record>> satisfyingTuples = new HashSet<Set<Record>>(); // Liste des ensembles de tuples qui satisfont le corps de la TGD
+                    for (var b : tgd.getBody()) {
                         var toFind = stripNumerals(b.get(0)); // On cherche la table dans le dictionnaire
                         if (allTuples.get(toFind) != null && allTuples.get(toFind).size() != 0)
-                            tupleSets.add(allTuples.get(toFind)); // Si la table existe et n'est pas vide, on l'ajoute à
-                                                                  // la liste des ensembles de tuples qui satisfont une
-                                                                  // partie du corps de la TGD
+                            tupleSets.add(allTuples.get(toFind)); // Si la table existe et n'est pas vide, on l'ajoute à la liste des ensembles de tuples qui satisfont une partie du corps de la TGD
                     }
-                    if (tupleSets.size() == tgd.getBody().size()) { // Si on a autant de tables dans le corps de la TGD
-                                                                    // que de tables dans le dictionnaire alors le corps
-                                                                    // est satisfait
-                        satisfyingTuples = generateCombinations(tupleSets); // Generation de tous les ensembles de
-                                                                            // tuples qui peuvent satisfaire le corps de
-                                                                            // la TGD
-                        for (var satisfyingTuple : satisfyingTuples) { // Pour chaque ensemble de tuples qui satisfait
-                                                                       // le corps de la TGD
-                            if (!(tgd.hasBeenAltered(satisfyingTuple))) { // Si l'ensemble n'a pas été deja satisfait
-                                for (int i = 0; i < tgd.getHead().size(); i++) { // Pour chaque table de la tête
+                    if (tupleSets.size() == tgd.getBody().size()) {
+                        satisfyingTuples = generateCombinations(tupleSets); // Generation de tous les ensembles de tuples qui peuvent satisfaire le corps de la TGD
+                        for (var satisfyingTuple : satisfyingTuples) {
+                            if (!(tgd.hasBeenAltered(satisfyingTuple))) {
+                                for (int i = 0; i < tgd.getHead().size(); i++) {
                                     var h = tgd.getHead().get(i);
-                                    if (allTuples.get(stripNumerals(h.get(0))) == null
-                                            || allTuples.get(stripNumerals(h.get(0))).size() == 0) { // Si la table est
-                                                                                                     // vide, alors il
-                                                                                                     // faut créer un
-                                                                                                     // record pour
-                                                                                                     // satisfaire la
-                                                                                                     // tête
+                                    if (allTuples.get(stripNumerals(h.get(0))) == null || allTuples.get(stripNumerals(h.get(0))).size() == 0) {
                                         allTuples.put(stripNumerals(h.get(0)), new HashSet<Record>());
-                                        // creation de la table dans la bdd
-                                        List<String> keys = new ArrayList<String>(); // Creation du record à ajouter
+                                        List<String> keys = new ArrayList<String>();
                                         List<Object> values = new ArrayList<Object>();
                                         for (int j = 1; j < h.size(); j++) {
-                                            // String s = "nullvalue";
-                                            // Object o = s;
-                                            keys.add(stripNumerals(h.get(j)));// On met les clés
-                                            values.add("nullvalue" + nullvalue); // On met toutes les valeurs à null. On
-                                                                                 // egalisera celles qu'il faut en
-                                                                                 // dessous
+                                            keys.add(stripNumerals(h.get(j)));
+                                            values.add("nullvalue" + nullvalue);
                                             nullvalue++;
                                         }
                                         boolean egal = true;
-                                        for (int j = 1; j < h.size(); j++) { // Pour chaque clé de la tête
+                                        for (int j = 1; j < h.size(); j++) {
                                             egal = true;
-                                            for (var b : tgd.getBody()) { // on regarde dans le corps les clés qui sont
-                                                                          // les memes que la clé de la tête qu'on
-                                                                          // regarde
-                                                for (var t : b) { // pour chaque string dans la partie du corps qu'on
-                                                                  // regarde
-                                                    if (egal == false)
-                                                        break;
+                                            for (var b : tgd.getBody()) {
+                                                for (var t : b) {
+                                                    if (egal == false) break;
                                                     if (t.equals(h.get(j))) { // si il est egal à la clé
-                                                        for (var tuple : satisfyingTuple) { // On cherche le record qui
-                                                                                            // appartient à la table
-                                                                                            // concernée
+                                                        for (var tuple : satisfyingTuple) { // On cherche le record qui appartient à la table concernée
                                                             if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
-                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j)))); // On
-                                                                                                                       // met
-                                                                                                                       // a
-                                                                                                                       // jour
-                                                                                                                       // la
-                                                                                                                       // valeur
-                                                                                                                       // liée
-                                                                                                                       // a
-                                                                                                                       // la
-                                                                                                                       // clé
+                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j)))); // On met a jour la valeur liée a la clé
                                                                 egal = false;
                                                                 break;
                                                             }
@@ -224,8 +181,7 @@ public final class Database {
                                             }
                                         }
                                         Record r = new Record(keys, values);
-                                        allTuples.get(stripNumerals(h.get(0))).add(r); // Ajouter le record à l'ensemble
-                                                                                       // des records de la table
+                                        allTuples.get(stripNumerals(h.get(0))).add(r); // Ajouter le record à l'ensemble des records de la table
                                         boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
                                             if (tabl.getName().equals(stripNumerals(h.get(0)))) {
@@ -243,61 +199,21 @@ public final class Database {
                                     } else {
                                         boolean satisfait = false;
                                         boolean egal = true;
-                                        for (var t : allTuples.get(stripNumerals(h.get(0)))) { // Pour les tuples
-                                                                                               // correspondant à la
-                                                                                               // table concernée dans
-                                                                                               // une partie de la tête
-                                                                                               // :
+                                        for (var t : allTuples.get(stripNumerals(h.get(0)))) { // Pour les tuples correspondant à la table concernée dans une partie de la tête:
                                             egal = true;
-                                            for (int j = 1; j < h.size(); j++) { // pour chaque clé de cette partie de
-                                                                                 // la tête
-                                                if (egal == false)
-                                                    break;
+                                            for (int j = 1; j < h.size(); j++) { // pour chaque clé de cette partie de la tête
+                                                if (egal == false) break;
                                                 for (var b : tgd.getBody()) { // Pour chaque tuple dans le corps
-                                                    if (egal == false)
-                                                        break;
+                                                    if (egal == false) break;
                                                     for (var cle : b) { // pour chaque clé du tuple dans le corps
-                                                        if (egal == false)
-                                                            break;
-                                                        if (satisfait)
-                                                            break;
-                                                        if (cle.equals(h.get(j))) { // si la clé
-                                                                                    // est égale
-                                                                                    // à la clé
-                                                                                    // de la
-                                                                                    // tete
-                                                            for (var tuple : satisfyingTuple) { // Pour chaque tuple
-                                                                                                // dans les tuples qui
-                                                                                                // satisfont le corps
-                                                                if (satisfait)
-                                                                    break;
-                                                                if (tuple.getTable().equals(stripNumerals(b.get(0)))) { // si
-                                                                                                                        // ce
-                                                                                                                        // tuple
-                                                                                                                        // appartient
-                                                                                                                        // à
-                                                                                                                        // la
-                                                                                                                        // table
-                                                                                                                        // concernée
-                                                                    if (tuple.get(stripNumerals(h.get(j))) != t
-                                                                            .get(stripNumerals(h.get(j)))) { // si la
-                                                                                                             // valeur
-                                                                                                             // de
-                                                                                                             // la clé
-                                                                                                             // dans le
-                                                                                                             // tuple de
-                                                                                                             // la tete
-                                                                                                             // est
-                                                                                                             // différente
-                                                                                                             // de la
-                                                                                                             // valeur
-                                                                                                             // de
-                                                                                                             // la clé
-                                                                                                             // dans le
-                                                                                                             // tuple du
-                                                                                                             // corps
+                                                        if (egal == false) break;
+                                                        if (satisfait) break;
+                                                        if (cle.equals(h.get(j))) { // si la clé est égale à la clé de la tete
+                                                            for (var tuple : satisfyingTuple) { // Pour chaque tuple dans les tuples qui satisfont le corps
+                                                                if (satisfait) break;
+                                                                if (tuple.getTable().equals(stripNumerals(b.get(0)))) { // si ce tuple appartient à la table concernée
+                                                                    if (tuple.get(stripNumerals(h.get(j))) != t.get(stripNumerals(h.get(j)))) { // si la valeur de la clé dans le tuple de la tete est différente de la valeur de la clé dans le tuple du corps
                                                                         egal = false; // la contrainte n'est pas
-                                                                                      // satisfaite par le tuple t
                                                                         satisfait = false;
                                                                         break;
                                                                     } else {
@@ -309,13 +225,9 @@ public final class Database {
                                                     }
                                                 }
                                             }
-                                            break; // Si on a trouvé un tuple qui satisfait la la partie de la tête
-                                                   // concernée, on sort de la boucle et on passe à la partie de la tête
-                                                   // d'après
-
+                                            break; // Si on a trouvé un tuple qui satisfait la la partie de la tête concernée, on sort de la boucle et on passe à la partie de la tête d'après
                                         }
-                                        // Si on arrive ici, c'est qu'on a parcouru tous les tuples de la table
-                                        // concernée et qu'aucun ne satisfait la partie de la tête concernée
+                                        // Si on arrive ici, c'est qu'on a parcouru tous les tuples de la table concernée et qu'aucun ne satisfait la partie de la tête concernée
                                         List<String> keys = new ArrayList<String>();
                                         List<Object> values = new ArrayList<Object>();
                                         for (int j = 1; j < h.size(); j++) {
@@ -326,31 +238,15 @@ public final class Database {
                                             nullvalue++;
                                         }
                                         egal = true;
-                                        for (int j = 1; j < h.size(); j++) {// Pour chaque clé de la tête
+                                        for (int j = 1; j < h.size(); j++) { // Pour chaque clé de la tête
                                             egal = true;
-                                            for (var b : tgd.getBody()) {// on regarde dans le corps les clés qui sont
-                                                                         // les memes que la clé de la tête qu'on
-                                                                         // regarde
-                                                for (var t : b) {// pour chaque string dans la partie du corps qu'on
-                                                                 // regarde
-                                                    if (egal == false)
-                                                        break;
-                                                    if (t.equals(h.get(j))) {// si il est egal à
-                                                                             // la clé
-                                                        for (var tuple : satisfyingTuple) {// On cherche le record qui
-                                                                                           // appartient la table
-                                                                                           // concernée
+                                            for (var b : tgd.getBody()) { // on regarde dans le corps les clés qui sont les memes que la clé de la tête qu'on regarde
+                                                for (var t : b) {// pour chaque string dans la partie du corps qu'on regarde
+                                                    if (egal == false) break;
+                                                    if (t.equals(h.get(j))) { // si il est egal à la clé
+                                                        for (var tuple : satisfyingTuple) { // On cherche le record qui appartient la table concernée
                                                             if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
-                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On
-                                                                                                                      // met
-                                                                                                                      // a
-                                                                                                                      // jour
-                                                                                                                      // la
-                                                                                                                      // valeur
-                                                                                                                      // liée
-                                                                                                                      // a
-                                                                                                                      // la
-                                                                                                                      // clé
+                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On met a jour la valeur liée a la clé
                                                                 egal = false;
                                                                 break;
                                                             }
@@ -360,10 +256,7 @@ public final class Database {
                                             }
                                         }
                                         Record r = new Record(keys, values);
-                                        allTuples.get(stripNumerals(h.get(0))).add(r);// ajouter le record à l'ensemble
-                                                                                      // des records de la table
-                                        System.out.println("On a ajouté le record " + r + " à la table " + h.get(0));
-
+                                        allTuples.get(stripNumerals(h.get(0))).add(r); // ajouter le record à l'ensemble des records de la table
                                         boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
                                             if (tabl.getName().equals(stripNumerals(h.get(0)))) {
@@ -376,9 +269,7 @@ public final class Database {
                                             Table ajoute = new Table(stripNumerals(h.get(0)), keys);
                                             ajoute.addRecord(r);
                                             this.getTables().add(ajoute);
-
                                         }
-
                                     }
                                 }
                             }
@@ -386,8 +277,7 @@ public final class Database {
                             loopCount += 1; // Si le tuple a déjà été satisfait par la TGD
                         }
                     }
-                    if (loopCount == satisfyingTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la
-                                                                // satisfont
+                    if (loopCount == satisfyingTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
                         appliedTGDs += 1;
                     }
                 } else {
@@ -395,16 +285,11 @@ public final class Database {
                         onceStabilized = ((EGD) constraint).apply(this);
                     } else {
                         twiceStabilized = ((EGD) constraint).apply(this);
-                        if (!twiceStabilized)
-                            onceStabilized = false;
+                        if (!twiceStabilized) onceStabilized = false;
                     }
                 }
             }
         }
-    }
-
-    private void applyEGD(final EGD egd) {
-        egd.apply(this);
     }
 
     public void obliviousChase(List<TGD> contraintes, int milliseconds) {
