@@ -12,9 +12,11 @@ import java.util.Map;
  */
 public final class Record {
     private final Map<String, Object> fields;
-    private  String table=""; // The name of the table to which the record belongs
+    private String table; // The name of the table to which the record belongs
+
     public Record(final Map<String, Object> fields) {
         this.fields = fields;
+        this.table = new String();
     }
     /**
      * Create a record from a list of keys and a list of values.
@@ -57,15 +59,28 @@ public final class Record {
      * @param key
      * @return the value of the field
      */
-    public void setTable(String table){
-        this.table=table;
-    }
     public Object get(final String key) {
         return fields.get(key);
     }
+
+    /**
+     * Check if the record contains a field.
+     * 
+     * @param key
+     * @return true if the record contains the field, false otherwise
+     */
+    public boolean contains(final String key) {
+        return fields.containsKey(key);
+    }
+
+    public void setTable(String table) {
+        this.table = table;
+    }
+
     public String getTable(){
         return this.table;
     }
+   
     /**
      * Set the value of a field.
      * 
