@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A record is a set of key-value pairs.
@@ -89,6 +90,10 @@ public final class Record {
      */
     public void set(final String key, final Object value) {
         fields.put(key, value);
+    }
+
+    public Set<String> getAttributes() {
+        return this.fields.keySet();
     }
 
     @Override

@@ -1,7 +1,8 @@
 package etu.uparis.bdd;
-
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 
 /**
  * An EGD is a pair of lists of keys that represents a constraint on the database in the form of an equality.
@@ -13,62 +14,76 @@ import java.util.List;
  * @author Skander
  */
 public class EGD extends Constraint {
-    private List<List<String>> leftHandSide;
-
-    private List<List<String>> rightHandSide;
+    private List<List<String>> head;
+    private List<List<String>> body;
+    private Set<Set<Record>> alteredTuples;
 
     /**
-     * Create an EGD from a left-hand side and a right-hand side.
+     * Create an EGD from a body and a head.
      * 
-     * @param leftHandSide the left-hand side of the EGD
-     * @param rightHandSide the right-hand side of the EGD
+     * @param body the body of the EGD
+     * @param head the head of the EGD
      */
-    public EGD(List<List<String>> leftHandSide, List<List<String>> rightHandSide) {
-        this.leftHandSide = Collections.unmodifiableList(leftHandSide);
-        this.rightHandSide = Collections.unmodifiableList(rightHandSide);
+    public EGD(List<List<String>> body, List<List<String>> head) {
+        this.body = body;
+        this.head = head;
+        this.alteredTuples = new HashSet<Set<Record>>();
+    }
+
+    /** 
+     * Get the list of altered tuples.
+     * 
+     * @return the altered tuples
+     */
+    public Set<Set<Record>> getAlteredTuples() {
+        return alteredTuples;
     }
 
     /**
-     * Get the left-hand side of the EGD.
+     * Mark the given tuple as altered.
      * 
-     * @return the left-hand side of the EGD
+     * @param tuple the tuple to mark as altered
      */
-    public List<List<String>> getLeftHandSide() {
-        return leftHandSide;
+    public void markAsAltered(Set<Record> tuple) {
+        this.alteredTuples.add(tuple);
     }
 
     /**
-     * Get the right-hand side of the EGD.
+     * Get the body of the EGD.
      * 
-     * @return the right-hand side of the EGD
+     * @return the body
      */
-    public List<List<String>> getRightHandSide() {
-        return rightHandSide;
+    public List<List<String>> getBody() {
+        return this.body;
     }
 
     /**
-     * Check if the EGD is valid for the given database.
-     *
+     * Get the head of the EGD.
+     * 
+     * @return the head
+     */
+    public List<List<String>> getHead() {
+        return this.head;
+    }
+
+    /**
+     * Check if the given tuple has been altered by the EGD.
+     * 
+     * @param tuple the tuple to check
+     * @return true if the tuple has been altered, false otherwise
+     */
+    public boolean hasBeenAltered(Set<Record> tuple) {
+        return this.alteredTuples.contains(tuple);
+    }
+
+    /**
+     * Check if the EGD is valid in the given database.
+     * 
      * @param database the database to check
      * @return true if the EGD is valid, false otherwise
      */
     @Override
     public boolean validate(Database database) {
-        // Check if the left-hand side and the right-hand side have the same size
-        if (this.leftHandSide.size() != this.rightHandSide.size()) {
-            return false;
-        }
-        // Check if the left-hand side and the right-hand side have the same keys
-        for (int i = 0; i < this.leftHandSide.size(); i++) { // Go through the left-hand side and the right-hand side
-            List<String> leftTuple = this.leftHandSide.get(i); // Get the left-hand side tuple in the form (table, key), (table, key), ...
-            List<String> rightTuple = this.rightHandSide.get(i); // Get the right-hand side tuple in the form (table, key), (table, key), ...
-            if (leftTuple.size() != rightTuple.size())  return false; // If the size of the left-hand side tuple is not the same as the size of the right-hand side tuple, return false
-            for (int j = 0; j < leftTuple.size(); j++) { // Go through the left-hand side tuple and the right-hand side tuple
-                String leftValue = leftTuple.get(j); // Get the left-hand side value
-                String rightValue = rightTuple.get(j); // Get the right-hand side value 
-                if (!leftValue.equals(rightValue)) return false; // If the left-hand side value is not the same as the right-hand side value, return false
-            } 
-        } // If the left-hand side and the right-hand side have the same keys,
         return true;
-    } 
+    }
 }
