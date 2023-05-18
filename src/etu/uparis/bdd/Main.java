@@ -1,6 +1,5 @@
 package etu.uparis.bdd;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,25 +25,47 @@ public final class Main {
         // TGD tgd2 = new TGD(List.of(List.of ("t3=t3", "parent=parent1", "nationalité=nationalité1"), List.of("enseignantparticulier=enseignantparticulier1", "nom=nom1", "matiere=matiere1", "id=id1", "age=age1")), List.of (List.of("students=students1", "id=id2", "surname=surname1", "name=name1", "age=age1", "gender=gender1"), List.of("t2=t2", "matiere=matiere1", "nationalité=nationalité1"))); 
         // TGD tgdOblivious = new TGD (List.of(List.of ("t3=t3", "parent=parent1", "nationalité=nationalité1")), List.of(List.of("t3=t3", "parent=parent1", "nationalité=nationalité2")));
        // Add records to the table
-        t3.addRecord("{ parent = pipi, nationalité = français }");
+       /* t3.addRecord("{ parent = pipi, nationalité = français }");
         t3.addRecord("{ parent = prout, nationalité = français }");
         t2.addRecord("{ matiere = français, nationalité = caca }");
         students.addRecord("{ id = 22, surname = Bazelet, name = Florent, gender = M }");
         students.addRecord(new Record(List.of("id", "name", "age", "gender"), List.of("22", "Skander", 22, "M")));
         enseignantsparticulier.addRecord("{ nom = Bazelet, matiere = Math, id = 21957008, age = 18 }");
-
+*/
         // Add the table to the database
+      /*
         database.addTable(t3);
         database.addTable(t2);
         database.addTable(students);
         database.addTable(enseignantsparticulier);
         // Print the database
         System.out.println(database);
-
+*/
         System.out.println("\nbody satisfied ? \n");
         // System.out.println(tgdOblivious.apply(database));
         // database.standardChase(List.of(tgd1, tgd2, tgdOblivious));
 
+
+        /*----------------EXEMPLE DU SUJET-----------------------*/
+
+
+        Table R = new Table("R", List.of("A", "B"));
+        Table P = new Table("P", List.of("B", "A"));
+        Table Q = new Table("Q", List.of("A", "B", "G"));
+        TGD c1 = new TGD(List.of(List.of("R=R", "A=A1", "B=B1")), List.of(List.of("Q=Q1", "A=A1", "B=B1", "G=G1")));
+        TGD c2  = new TGD(List.of(List.of("Q=Q1", "A=A1", "B=B1", "G=G1")),List.of(List.of("P=P1", "B=B1", "A=A2")));
+        EGD c3 = new EGD(Map.of("R", List.of("A1", "B1"), "P", List.of("B2", "A2")), Set.of("B1=B2"), Set.of("A1=A2"));
+        database.addTable(R);
+        database.addTable(P);
+        database.addTable(Q);
+        R.addRecord("{ A = A1, B = B1 }");
+        System.out.println(database);
+        database.standardChase(List.of(c1, c2, c3));
+
+        /*------------------------------------------------------*/
+
+
+/*
         Map<String, List<String>> egdTables = new HashMap<String, List<String>>();
         egdTables.put("t3", List.of("parent", "nationalité"));
         egdTables.put("t2", List.of("nationalité", "parent"));
@@ -53,7 +74,7 @@ public final class Main {
         //database.obliviousChase(List.of( tgdOblivious), 2);
         //database.obliviousSkolemChase(List.of(tgdOblivious));
         // System.out.println("\nApplying EGD...\n");
-
+*/
        /* students.applyEGD(() -> {
             return List.of(List.of("id"), List.of("surname", "name", "age", "gender"));
         });

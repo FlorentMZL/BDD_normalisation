@@ -122,15 +122,22 @@ public final class Database {
      * @param constraints the constraints to apply
      */
     public final void standardChase(final List<Constraint> constraints) {
-        // var countApplied = 0; // Nombre de contraintes appliquées à la base de données
-        //var count = 0; // Nombre de contraintes appliquées à la base de données lors d'un tour de
+        int nbTGD=0;
+        for(Constraint c : constraints){
+            if(c instanceof TGD){
+                nbTGD++;
+            }
+        }
+
+         var countApplied = 0; // Nombre de contraintes TGD appliquées à la base de données
+        var count = 0; // Nombre de contraintes TGD appliquées à la base de données lors d'un tour de
                        // boucle
         var foolMeOnce = false;
         var foolMeTwice = false;
         //while (countApplied < constraints.size()) {
-        while (!foolMeOnce && !foolMeTwice) {
-            // count = 0;
-            // countApplied = 0;
+        while (!foolMeOnce && !foolMeTwice&&!(countApplied==nbTGD)) {
+             count = 0;
+         countApplied = 0;
             var allTuples = new HashMap<String, Set<Record>>();
             for (var table : this.getTables()) {
                 allTuples.put(table.getName(), table.getRecords()); // Dictionnaire qui associe à chaque table
@@ -138,7 +145,7 @@ public final class Database {
                                                                     // manipulations
             }
             for (final var constraint : constraints) {
-                // count = 0;
+                 count = 0;
                 if (constraint instanceof TGD) { // TGD : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
                     TGD tgd = (TGD) constraint;
                     System.out.println("TGD: " + tgd);
@@ -360,12 +367,12 @@ public final class Database {
                                 }
                             }
                             tgd.markAsAltered(tuplesatisfying);
-                            // count += 1; // Si le tuple a déjà été satisfait par la TGD
+                             count += 1; // Si le tuple a déjà été satisfait par la TGD
                         }
                     }
-                    //if (count == applyOnTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
-                    //    countApplied += 1;
-                    //}
+                    if (count == applyOnTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
+                        countApplied += 1;
+                    }
                 } else {
                     if (!foolMeOnce) { foolMeOnce = ((EGD) constraint).apply(this); } else { foolMeTwice = ((EGD) constraint).apply(this); if (!foolMeTwice) foolMeOnce = false; }
                 }
@@ -654,5 +661,12 @@ public final class Database {
             return ("");
         }
     }
-
+    public static String withoutNumber(String s){//Pour passer de attribut1 à attribut sans le numéro
+        for(int i=0;i<s.length();i++){
+            if(Character.isDigit(s.charAt(i))){
+                return s.substring(0,i);
+            }
+        }
+        return s;
+    }
 }

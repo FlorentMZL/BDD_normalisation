@@ -45,13 +45,15 @@ public class EGD extends Constraint {
                 for (var record2 : allRecords) {
                     if (record1 == record2) continue; // On ne compare pas un record avec lui-même
                     if (this.body.get(record1.getTable()).contains(firstAttribute) && this.body.get(record2.getTable()).contains(secondAttribute)) { // On ne compare que les records qui ont les bons attributs
+                        String firstAttributewithoutNumber= Database.withoutNumber(firstAttribute);
+                        String secondAttributewithoutNumber= Database.withoutNumber(secondAttribute);
                         System.out.println("Comparing " + record1 + " and " + record2);
-                        if (record1.get(firstAttribute).equals(record2.get(secondAttribute))) { // Si les attributs sont égaux
-                            System.out.println("They are the same in " + firstAttribute + " and " + secondAttribute);
+                        if (record1.get(firstAttributewithoutNumber).equals(record2.get(secondAttributewithoutNumber))) { // Si les attributs sont égaux
+                            System.out.println("They are the same in " + firstAttributewithoutNumber + " and " + secondAttributewithoutNumber);
                             matchingRecords.add(record1);
                             matchingRecords.add(record2); // On ajoute les deux records au set
                         } else {
-                            System.out.println("They are not the same in " + firstAttribute + " and " + secondAttribute);
+                            System.out.println("They are not the same in " + firstAttributewithoutNumber + " and " + secondAttributewithoutNumber);
                             matchingRecords.remove(record1); // Sinon on les retire
                             matchingRecords.remove(record2); 
                             // Cela va permettre de ne garder que les records qui matchent pour la suite
@@ -69,27 +71,29 @@ public class EGD extends Constraint {
                 for (var matchingRecord2 : matchingRecords) { // On parcourt les records qui matchent
                     if (matchingRecord1 == matchingRecord2) continue; // On ne compare pas un record avec lui-même
                     if (this.body.get(matchingRecord1.getTable()).contains(firstAttribute) && this.body.get(matchingRecord2.getTable()).contains(secondAttribute)) { // On ne compare que les records qui ont les bons attributs
-                        String value1 = (String) matchingRecord1.get(firstAttribute);
-                        String value2 = (String) matchingRecord2.get(secondAttribute); // On récupère les valeurs des attributs
+                        String firstAttributewithoutNumber=Database.withoutNumber(firstAttribute);
+                        String secondAttributewithoutNumber=Database.withoutNumber(secondAttribute);
+                        String value1 = (String) matchingRecord1.get(firstAttributewithoutNumber);
+                        String value2 = (String) matchingRecord2.get(secondAttributewithoutNumber); // On récupère les valeurs des attributs
                         if (value1.equals(value2)) {
                             System.out.println(value1 + " = " + value2);
                             continue;
                         } else if (value1.startsWith("nullvalue") && !value2.startsWith("nullvalue")) { 
                             /* alteredTuples.add(new Record(matchingRecord1.toString().replace(value1, value2))); */
-                            matchingRecord1.set(firstAttribute, value2); // On remplace la valeur de l'attribut du record
+                            matchingRecord1.set(firstAttributewithoutNumber, value2); // On remplace la valeur de l'attribut du record
                             System.out.println("Altered " + matchingRecord1 + " to " + value2);
                         } else if (!value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) {
                             /* alteredTuples.add(new Record(matchingRecord2.toString().replace(value2, value1))); */
-                            matchingRecord2.set(secondAttribute, value1); // On remplace la valeur de l'attribut du record
+                            matchingRecord2.set(secondAttributewithoutNumber, value1); // On remplace la valeur de l'attribut du record
                             System.out.println("Altered " + matchingRecord2 + " to " + value1);
                         } else if (value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) {
-                            if (Math.random() < 0.5) /* alteredTuples.add(new Record(matchingRecord1.toString().replace(value1, value2))); */ matchingRecord1.set(firstAttribute, value2);
+                            if (Math.random() < 0.5) /* alteredTuples.add(new Record(matchingRecord1.toString().replace(value1, value2))); */ matchingRecord1.set(firstAttributewithoutNumber, value2);
                             else /* alteredTuples.add(new Record(matchingRecord2.toString().replace(value2, value1))); */ matchingRecord2.set(secondAttribute, value1);
                         } else {
-                            matchingRecord1.set(firstAttribute, "nullvalue" + Database.nullvalue); // On remplace la valeur de l'attribut du record
+                            matchingRecord1.set(firstAttributewithoutNumber, "nullvalue" + Database.nullvalue); // On remplace la valeur de l'attribut du record
                             Database.nullvalue++; // On incrémente le nullvalue
                             System.out.println("Altered " + matchingRecord1 + " to nullvalue" + Database.nullvalue);
-                            matchingRecord2.set(secondAttribute, "nullvalue" + Database.nullvalue);
+                            matchingRecord2.set(secondAttributewithoutNumber, "nullvalue" + Database.nullvalue);
                             Database.nullvalue++;
                             System.out.println("Altered " + matchingRecord2 + " to nullvalue" + Database.nullvalue);
                         }
