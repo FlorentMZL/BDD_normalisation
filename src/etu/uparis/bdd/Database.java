@@ -122,12 +122,15 @@ public final class Database {
      * @param constraints the constraints to apply
      */
     public final void standardChase(final List<Constraint> constraints) {
-        var countApplied = 0; // Nombre de contraintes appliquées à la base de données
-        var count = 0; // Nombre de contraintes appliquées à la base de données lors d'un tour de
+        // var countApplied = 0; // Nombre de contraintes appliquées à la base de données
+        //var count = 0; // Nombre de contraintes appliquées à la base de données lors d'un tour de
                        // boucle
-        while (countApplied < constraints.size()) {
-            count = 0;
-            countApplied = 0;
+        var foolMeOnce = false;
+        var foolMeTwice = false;
+        //while (countApplied < constraints.size()) {
+        while (!foolMeOnce && !foolMeTwice) {
+            // count = 0;
+            // countApplied = 0;
             var allTuples = new HashMap<String, Set<Record>>();
             for (var table : this.getTables()) {
                 allTuples.put(table.getName(), table.getRecords()); // Dictionnaire qui associe à chaque table
@@ -135,13 +138,13 @@ public final class Database {
                                                                     // manipulations
             }
             for (final var constraint : constraints) {
-                count = 0;
+                // count = 0;
                 if (constraint instanceof TGD) { // TGD : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
                     TGD tgd = (TGD) constraint;
                     System.out.println("TGD: " + tgd);
-                    var ontuples = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui satisfont une
+                    List<Set<Record>> ontuples = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui satisfont une
                                                                  // partie du corps de la TGD
-                    var applyOnTuples = new HashSet<HashSet<Record>>(); // Liste des ensembles de tuples qui satisfont
+                    Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>(); // Liste des ensembles de tuples qui satisfont
                                                                         // le corps de la TGD
                     for (var b : tgd.getBody()) { // Pour chaque table dans le corps de la TGD
                         var toFind = beforeequal(b.get(0)); // On cherche la table dans le dictionnaire
@@ -357,21 +360,21 @@ public final class Database {
                                 }
                             }
                             tgd.markAsAltered(tuplesatisfying);
-                            count += 1; // Si le tuple a déjà été satisfait par la TGD
+                            // count += 1; // Si le tuple a déjà été satisfait par la TGD
                         }
                     }
-                    if (count == applyOnTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
-                        countApplied += 1;
-                    }
+                    //if (count == applyOnTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
+                    //    countApplied += 1;
+                    //}
                 } else {
-                    this.applyEGD((EGD) constraint);
+                    if (!foolMeOnce) { foolMeOnce = ((EGD) constraint).apply(this); } else { foolMeTwice = ((EGD) constraint).apply(this); if (!foolMeTwice) foolMeOnce = false; }
                 }
             }
         }
     }
     
     private void applyEGD(final EGD egd) {
-        // TODO
+        egd.apply(this);
     }
 
     public void obliviousChase(List<TGD> contraintes, int milliseconds) {
