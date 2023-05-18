@@ -122,12 +122,22 @@ public final class Database {
      * @param constraints the constraints to apply
      */
     public final void standardChase(final List<Constraint> constraints) {
-        var countApplied = 0; // Nombre de contraintes appliquées à la base de données
-        var count = 0; // Nombre de contraintes appliquées à la base de données lors d'un tour de
+        int nbTGD=0;
+        for(Constraint c : constraints){
+            if(c instanceof TGD){
+                nbTGD++;
+            }
+        }
+
+         var countApplied = 0; // Nombre de contraintes TGD appliquées à la base de données
+        var count = 0; // Nombre de contraintes TGD appliquées à la base de données lors d'un tour de
                        // boucle
-        while (countApplied < constraints.size()) {
-            count = 0;
-            countApplied = 0;
+        var foolMeOnce = false;
+        var foolMeTwice = false;
+        //while (countApplied < constraints.size()) {
+        while (!foolMeOnce && !foolMeTwice&&!(countApplied==nbTGD)) {
+             count = 0;
+         countApplied = 0;
             var allTuples = new HashMap<String, Set<Record>>();
             for (var table : this.getTables()) {
                 allTuples.put(table.getName(), table.getRecords()); // Dictionnaire qui associe à chaque table
@@ -135,13 +145,13 @@ public final class Database {
                                                                     // manipulations
             }
             for (final var constraint : constraints) {
-                count = 0;
+                 count = 0;
                 if (constraint instanceof TGD) { // TGD : sous forme R(w)^S(w)^.. -> R'(w)^S'(w)^..
                     TGD tgd = (TGD) constraint;
                     System.out.println("TGD: " + tgd);
-                    var ontuples = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui satisfont une
+                    List<Set<Record>> ontuples = new ArrayList<Set<Record>>(); // Liste des ensembles de tuples qui satisfont une
                                                                  // partie du corps de la TGD
-                    var applyOnTuples = new HashSet<HashSet<Record>>(); // Liste des ensembles de tuples qui satisfont
+                    Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>(); // Liste des ensembles de tuples qui satisfont
                                                                         // le corps de la TGD
                     for (var b : tgd.getBody()) { // Pour chaque table dans le corps de la TGD
                         var toFind = beforeequal(b.get(0)); // On cherche la table dans le dictionnaire
@@ -357,107 +367,21 @@ public final class Database {
                                 }
                             }
                             tgd.markAsAltered(tuplesatisfying);
-                            count += 1; // Si le tuple a déjà été satisfait par la TGD
+                             count += 1; // Si le tuple a déjà été satisfait par la TGD
                         }
                     }
                     if (count == applyOnTuples.size()) { // Si la TGD a été appliquée à tous les tuples qui la satisfont
                         countApplied += 1;
                     }
                 } else {
-                    var tablesAsList = new ArrayList<>(this.tables);
-                    var egd = (EGD) constraint;
-                    var matchedRecords = new ArrayList<Record>(); // Liste des records qui satisfont les contraintes
-                    var firstTableName = egd.getBody().get(0).get(0); 
-                    var firstTable = findTableByName(tablesAsList, firstTableName);
-                    if (firstTable != null) {
-                        var body = egd.getBody();
-                        var firstTableBody = body.get(0);
-                        var firstAttributeName = firstTableBody.get(1);
-                        for (var record : firstTable.getRecords()) { // Pour chaque record de la table
-                            var isSatisfied = true;
-                            for (int i = 1; i < body.size(); i++) { // Pour chaque table dans le corps
-                                var tableName = body.get(i).get(0); 
-                                var otherTable = findTableByName(tablesAsList, tableName); 
-                                if (otherTable != null) { 
-                                    var otherTableBody = body.get(i); // Liste des attributs de la table étrangère
-                                    var otherAttributeName = otherTableBody.get(1);
-                                    var attributeMatch = false;
-                                    for (var otherRecord : otherTable.getRecords()) { // Pour chaque record de la table étrangère
-                                        if (record.get(firstAttributeName).equals(otherRecord.get(otherAttributeName))) { // Si les valeurs des attributs sont égales
-                                            attributeMatch = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!attributeMatch) {
-                                        isSatisfied = false;
-                                        // On sort de la boucle car le record ne satisfait pas la contrainte
-                                        break;
-                                    }
-                                }
-                            }
-                            if (isSatisfied) {
-                                matchedRecords.add(record); // On ajoute le record à la liste des records qui satisfont la contrainte
-                            }
-                        }
-                    } else {
-                        System.out.println("Table " + firstTableName + " not found");
-                        // On ne fait rien car la table n'existe pas
-                    }
-                    for (var record : matchedRecords) { // Pour chaque record qui satisfait la contrainte
-                        for (var attributeList : egd.getHead()) { // Pour chaque attribut de la tête
-                            var tableName = attributeList.get(0);
-                            var table = findTableByName(tablesAsList, tableName); // On cherche la table correspondante
-                            if (table != null) {
-                                for (int i = 1; i < attributeList.size(); i++) { // Pour chaque attribut de la table
-                                    var attributeName = attributeList.get(i);
-                                    String value = (String) record.get(attributeName);
-                                    if (value != null && value.startsWith("nullvalue")) {
-                                        record.set(attributeName, "nullvalue" + nullvalue);
-                                        nullvalue++;
-                                    } // On met à jour la valeur de l'attribut si elle commence par "nullvalue"
-                                }
-                            }
-                        }
-                    }
-                    // Rebelotte pour les autres tables
-                    for (var record : matchedRecords) {
-                        for (var attributeList : egd.getHead()) {
-                            var tableName = attributeList.get(0);
-                            var table = findTableByName(tablesAsList, tableName);
-                            if (table != null) {
-                                for (int i = 1; i < attributeList.size(); i++) {
-                                    var attributeName = attributeList.get(i);
-                                    String value = (String) record.get(attributeName);
-                                    if (value != null && !value.startsWith("nullvalue")) {
-                                        for (var otherRecord : matchedRecords) {
-                                            if (otherRecord != record && ((String) otherRecord.get(attributeName)).startsWith("nullvalue")) {
-                                                otherRecord.set(attributeName, value);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    if (!foolMeOnce) { foolMeOnce = ((EGD) constraint).apply(this); } else { foolMeTwice = ((EGD) constraint).apply(this); if (!foolMeTwice) foolMeOnce = false; }
                 }
             }
         }
     }
-
-    /**
-     * Finds a table by its name
-     * 
-     * @param tables
-     * @param tableName
-     * @return the table if it exists, null otherwise
-     */
-    private Table findTableByName(List<Table> tables, String tableName) {
-        for (Table table : tables) {
-            if (table.getName().equals(tableName)) {
-                return table;
-            }
-        }
-        return null;
+    
+    private void applyEGD(final EGD egd) {
+        egd.apply(this);
     }
 
     public void obliviousChase(List<TGD> contraintes, int milliseconds) {
@@ -737,5 +661,12 @@ public final class Database {
             return ("");
         }
     }
-
+    public static String withoutNumber(String s){//Pour passer de attribut1 à attribut sans le numéro
+        for(int i=0;i<s.length();i++){
+            if(Character.isDigit(s.charAt(i))){
+                return s.substring(0,i);
+            }
+        }
+        return s;
+    }
 }
