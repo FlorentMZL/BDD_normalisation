@@ -364,100 +364,14 @@ public final class Database {
                         countApplied += 1;
                     }
                 } else {
-                    var tablesAsList = new ArrayList<>(this.tables);
-                    var egd = (EGD) constraint;
-                    var matchedRecords = new ArrayList<Record>(); // Liste des records qui satisfont les contraintes
-                    var firstTableName = egd.getBody().get(0).get(0); 
-                    var firstTable = findTableByName(tablesAsList, firstTableName);
-                    if (firstTable != null) {
-                        var body = egd.getBody();
-                        var firstTableBody = body.get(0);
-                        var firstAttributeName = firstTableBody.get(1);
-                        for (var record : firstTable.getRecords()) { // Pour chaque record de la table
-                            var isSatisfied = true;
-                            for (int i = 1; i < body.size(); i++) { // Pour chaque table dans le corps
-                                var tableName = body.get(i).get(0); 
-                                var otherTable = findTableByName(tablesAsList, tableName); 
-                                if (otherTable != null) { 
-                                    var otherTableBody = body.get(i); // Liste des attributs de la table étrangère
-                                    var otherAttributeName = otherTableBody.get(1);
-                                    var attributeMatch = false;
-                                    for (var otherRecord : otherTable.getRecords()) { // Pour chaque record de la table étrangère
-                                        if (record.get(firstAttributeName).equals(otherRecord.get(otherAttributeName))) { // Si les valeurs des attributs sont égales
-                                            attributeMatch = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!attributeMatch) {
-                                        isSatisfied = false;
-                                        // On sort de la boucle car le record ne satisfait pas la contrainte
-                                        break;
-                                    }
-                                }
-                            }
-                            if (isSatisfied) {
-                                matchedRecords.add(record); // On ajoute le record à la liste des records qui satisfont la contrainte
-                            }
-                        }
-                    } else {
-                        System.out.println("Table " + firstTableName + " not found");
-                        // On ne fait rien car la table n'existe pas
-                    }
-                    for (var record : matchedRecords) { // Pour chaque record qui satisfait la contrainte
-                        for (var attributeList : egd.getHead()) { // Pour chaque attribut de la tête
-                            var tableName = attributeList.get(0);
-                            var table = findTableByName(tablesAsList, tableName); // On cherche la table correspondante
-                            if (table != null) {
-                                for (int i = 1; i < attributeList.size(); i++) { // Pour chaque attribut de la table
-                                    var attributeName = attributeList.get(i);
-                                    String value = (String) record.get(attributeName);
-                                    if (value != null && value.startsWith("nullvalue")) {
-                                        record.set(attributeName, "nullvalue" + nullvalue);
-                                        nullvalue++;
-                                    } // On met à jour la valeur de l'attribut si elle commence par "nullvalue"
-                                }
-                            }
-                        }
-                    }
-                    // Rebelotte pour les autres tables
-                    for (var record : matchedRecords) {
-                        for (var attributeList : egd.getHead()) {
-                            var tableName = attributeList.get(0);
-                            var table = findTableByName(tablesAsList, tableName);
-                            if (table != null) {
-                                for (int i = 1; i < attributeList.size(); i++) {
-                                    var attributeName = attributeList.get(i);
-                                    String value = (String) record.get(attributeName);
-                                    if (value != null && !value.startsWith("nullvalue")) {
-                                        for (var otherRecord : matchedRecords) {
-                                            if (otherRecord != record && ((String) otherRecord.get(attributeName)).startsWith("nullvalue")) {
-                                                otherRecord.set(attributeName, value);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    this.applyEGD((EGD) constraint);
                 }
             }
         }
     }
-
-    /**
-     * Finds a table by its name
-     * 
-     * @param tables
-     * @param tableName
-     * @return the table if it exists, null otherwise
-     */
-    private Table findTableByName(List<Table> tables, String tableName) {
-        for (Table table : tables) {
-            if (table.getName().equals(tableName)) {
-                return table;
-            }
-        }
-        return null;
+    
+    private void applyEGD(final EGD egd) {
+        // TODO
     }
 
     public void obliviousChase(List<TGD> contraintes, int milliseconds) {

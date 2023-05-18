@@ -94,7 +94,7 @@ public class TGD extends Constraint {
      * @return true if the tuple is in the body, false otherwise
      */
     @Override
-    public boolean validate(Database database) {
+    public boolean apply(Database database) {
         /** boolean tupleFound = true; 
         for (var pairs : this.body) { // Iterate over all pairs of (table, key) in the body
             if (tupleFound) tupleFound = false; else return false; // If the tuple has not been found yet, check if it is in the database

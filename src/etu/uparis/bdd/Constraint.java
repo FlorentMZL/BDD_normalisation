@@ -8,6 +8,6 @@ package etu.uparis.bdd;
  * @author Skander
  */
 public abstract class Constraint {
-    public abstract boolean validate(Database database);
+    public abstract boolean apply(Database database);
 }
 
