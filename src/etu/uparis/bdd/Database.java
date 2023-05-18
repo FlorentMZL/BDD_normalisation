@@ -495,7 +495,7 @@ public final class Database {
                     for (var tuplesatisfying : applyOnTuples) {// Pour chaque ensemble de tuples qui satisfait le corps
                                                                // de la TGD
                         // On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
-                        if (!(tgd.isApplied(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
+                        if (!(tgd.hasBeenAltered(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
                             for (int i = 0; i < tgd.getHead().size(); i++) {// Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
                                 if (allTuples.get(beforeequal(h.get(0))) == null) {
@@ -544,8 +544,8 @@ public final class Database {
                                         tabl.addRecord(r);
                                     }
                                 }
-                                tgd.addApplied(tuplesatisfying);
-                                for (var a : tgd.getApplied()) {
+                                tgd.markAsAltered(tuplesatisfying);
+                                for (var a : tgd.getAlteredTuples()) {
                                     System.out
                                             .println("On a appliqué la TGD " + tgd + " sur l'ensemble de tuples " + a);
 
@@ -600,7 +600,7 @@ public final class Database {
                     for (var tuplesatisfying : applyOnTuples) {// Pour chaque ensemble de tuples qui satisfait le corps
                                                                // de la TGD
                         // On a créé tous les sous ensembles de tuples qui satisfont le corps de la TGD
-                        if (!(tgd.isApplied(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
+                        if (!(tgd.hasBeenAltered(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
                             for (int i = 0; i < tgd.getHead().size(); i++) {// Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
                                 if (allTuples.get(beforeequal(h.get(0))) == null) {
@@ -673,8 +673,8 @@ public final class Database {
                                         tabl.addRecord(r);
                                     }
                                 }
-                                tgd.addApplied(tuplesatisfying);
-                                for (var a : tgd.getApplied()) {
+                                tgd.markAsAltered(tuplesatisfying);
+                                for (var a : tgd.getAlteredTuples()) {
                                     System.out
                                             .println("On a appliqué la TGD " + tgd + " sur l'ensemble de tuples " + a);
 
