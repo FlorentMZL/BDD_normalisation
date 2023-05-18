@@ -1,5 +1,6 @@
 package etu.uparis.bdd;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -106,4 +107,39 @@ public class EGD extends Constraint {
         System.out.println(currentNumberOfRecords + " records left");
         return false;
     }  
+
+
+    public TGD convertToTGD(){
+        List<List<String>> TGDbody = new ArrayList<>();
+        List<List<String>> TGDhead = new ArrayList<>();
+        for(var m : this.body.keySet()){//On crée le corps de la TGD
+            List<String> TGDm = new ArrayList<>();
+            TGDm.add(m);
+            for(var a : this.body.get(m)){//On ajoute le nom de la table, puis les clés 
+                TGDm.add(a);
+            }
+            TGDbody.add(TGDm);
+        }
+        //On suppose que equalities ne contient qu'une seule égalité. 
+        for( var equality : this.equalities){//On ajoute les égalités au corps de la TGD en modifiant le nom des clés (ex : a1 = a2 -> remplacement de tous les a1 par des a2 dans le corps) 
+            String[] split = equality.split("=");
+            var leftequal= split[0];
+            var rightequal = split[1];
+            for(var cle : TGDbody){
+                if(cle.contains(leftequal)){
+                    cle.set(cle.indexOf(leftequal), rightequal);
+                    
+                }
+            }
+        }
+        for(var m : this.head){
+            List <String> TGDm = new ArrayList<>();
+            TGDm.add("TEMP"); 
+            TGDm.add(m.split("=")[0]);
+            TGDm.add(m.split("=")[1]);
+            TGDhead.add(TGDm);
+        }
+        return new TGD(TGDbody, TGDhead);
+
+    }
 }
