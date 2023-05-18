@@ -17,8 +17,6 @@ public final class Table {
     private List<String> keys;
     private Set<Record> records;
 
-    private String primaryKey;
-
     /**
      * Create a new table with the given name and keys.
      * 
@@ -38,18 +36,6 @@ public final class Table {
     }
 
     /**
-     * Set the primary key of the table.
-     * 
-     * @param primaryKey the primary key
-     */
-    public void setPrimaryKey(String primaryKey) {
-        if (!this.keys.contains(primaryKey)) {
-            throw new IllegalArgumentException("The primary key must be one of the keys of the table");
-        }
-        this.primaryKey = primaryKey;
-    }
-
-    /**
      * Add a record to the table.
      * 
      * @param representation the representation of the record
@@ -57,9 +43,6 @@ public final class Table {
      */
     public Record addRecord(final String representation) {
         final var record = new Record(representation);
-        if (this.primaryKey != null && record.get(this.primaryKey) == null) {
-            throw new IllegalArgumentException("The primary key must be set");
-        }
         this.records.add(record);
         record.setTable(this.name);
         return record;
@@ -72,48 +55,9 @@ public final class Table {
      * @return the record
      */
     public Record addRecord(final Record record) {
-        if (this.primaryKey != null && record.get(this.primaryKey) == null) {
-            throw new IllegalArgumentException("The primary key must be set");
-        }
         this.records.add(record);
         record.setTable(this.name);
         return record;
-    }
-    
-    /**
-     * Apply the given EGD to the table.
-     * 
-     * @param egd the EGD to apply
-     */
-    /*public void applyEGD(final EGD egd) {
-        final var values = egd.values();
-        final var leftHandSide = values.get(0);
-        final var rightHandSide = values.get(1);
-        // For each record
-        for (final var firstRecord : this.records) {
-            // For each record
-            for (final var secondRecord : this.records) {
-                if (firstRecord == secondRecord) { // Skip the same record
-                    continue;
-                }
-                for (final var leftHandeSideValue : leftHandSide) { // For each value in the left hand side
-                    if (this.keys.contains(leftHandeSideValue)) { // If the value is a key
-                        final var firstRecordValue = firstRecord.get(leftHandeSideValue); // Get the value of the first record
-                        final var secondRecordValue = secondRecord.get(leftHandeSideValue); // Get the value of the second record
-                        if (firstRecordValue == null || secondRecordValue == null) { // Skip if one of the values is null
-                            continue;
-                        }
-                        if (firstRecordValue.equals(secondRecordValue)) { // If the values are equal
-                            for (final var rightHandSideValue : rightHandSide) { // For each value in the right hand side
-                                if (this.keys.contains(rightHandSideValue)) { // If the value is a key
-                                    secondRecord.set(rightHandSideValue, firstRecord.get(rightHandSideValue)); // Set the value of the second record to the value of the first record
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
     
     /**
@@ -140,11 +84,7 @@ public final class Table {
         builder.append("-".repeat((COLUMN_WIDTH + 1) * this.keys.size() + this.keys.size() + 1));
         builder.append("\n| ");
         for (var key : this.keys) { // For each key
-            if (this.primaryKey != null && key.equals(this.primaryKey)) { // If the key is the primary key
-                key = key.concat(" (*)");
-            } else {
                 key = key.concat(" ");
-            }
             if (key.length() > COLUMN_WIDTH) { // If the key is too long
                 builder.append(key.substring(0, COLUMN_WIDTH - 5));
                 builder.append("... | ");

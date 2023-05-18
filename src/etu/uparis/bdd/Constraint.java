@@ -1,11 +1,10 @@
 package etu.uparis.bdd;
 
-
 /**
- * An EGD is a pair of lists of keys. 
- * The first list contains the keys of the left-hand side of the EGD, the second list contains the keys of the right-hand side of the EGD.
+ * A constraint is a rule that must be satisfied by a database.
+ * It can be a tuple-generating dependency (TGD) or an equality-generating dependency (EGD).
  * 
- * @author Skander
+ * @author Florent
  */
 public abstract class Constraint {
     public abstract boolean apply(Database database);

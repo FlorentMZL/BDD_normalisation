@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Pardon.
+ * An equality-generating dependency (EGD) is a pair of a body and a head that represents a constraint on the database.
+ * The body is a map of tables and their attributes that must be in the database for the constraint to be valid.
+ * The head is a set of attributes that must be equal if the constraint is valid.
  * 
  * @author Skander
  */
@@ -16,8 +18,16 @@ public class EGD extends Constraint {
     private final Set<String> equalities;
     private final Set<String> head;
 
+    // The number of records in the database before and after applying the constraint
     private int currentNumberOfRecords, previousNumberOfRecords;
 
+    /**
+     * Create an EGD from a body, a set of equalities and a head.
+     * 
+     * @param body
+     * @param equalities
+     * @param head
+     */
     public EGD(final Map<String, List<String>> body, final Set<String> equalities, final Set<String> head) {
         this.body = body;
         this.equalities = equalities;
@@ -28,118 +38,100 @@ public class EGD extends Constraint {
   
     @Override
     public boolean apply(Database database) {
-        // Etape 1
         var allRecords = new HashSet<Record>();
-        if (this.currentNumberOfRecords == -1) { // Premier passage
-            for (var tableName : this.body.keySet()) allRecords.addAll(database.getTable(tableName).getRecords()); // On récupère tous les records de toutes les tables du body
-            this.currentNumberOfRecords = allRecords.size(); // On sauvegarde le nombre de records
-            System.out.println(currentNumberOfRecords + " records on first iteration"); 
+        if (this.currentNumberOfRecords == -1) { // -1 means that the constraint has never been applied
+            for (var tableName : this.body.keySet()) allRecords.addAll(database.getTable(tableName).getRecords()); // Push all relevant records into a set
+            this.currentNumberOfRecords = allRecords.size(); // Save the number of records
         } else {
-            if (this.currentNumberOfRecords == this.previousNumberOfRecords) return true; // Si le nombre de records n'a pas changé, bingo
+            if (this.currentNumberOfRecords == this.previousNumberOfRecords) return true; // If the number of records hasn't changed, the constraint is still valid
         }
-        // Etape 2
-        var matchingRecords = new HashSet<Record>(); // On crée un set de records qui matchent
+        var matchingRecords = new HashSet<Record>(); // Gather all records that match the constraint
         for (var equality : this.equalities) { 
             var split = equality.split("=");
             String firstAttribute = split[0], secondAttribute = split[1];
             for (var record1 : allRecords) {
                 for (var record2 : allRecords) {
-                    if (record1 == record2) continue; // On ne compare pas un record avec lui-même
-                    if (this.body.get(record1.getTable()).contains(firstAttribute) && this.body.get(record2.getTable()).contains(secondAttribute)) { // On ne compare que les records qui ont les bons attributs
-                        String firstAttributewithoutNumber= Database.withoutNumber(firstAttribute);
-                        String secondAttributewithoutNumber= Database.withoutNumber(secondAttribute);
-                        System.out.println("Comparing " + record1 + " and " + record2);
-                        if (record1.get(firstAttributewithoutNumber).equals(record2.get(secondAttributewithoutNumber))) { // Si les attributs sont égaux
-                            System.out.println("They are the same in " + firstAttributewithoutNumber + " and " + secondAttributewithoutNumber);
+                    if (record1 == record2) continue; // No need to compare a record with itself
+                    if (this.body.get(record1.getTable()).contains(firstAttribute) && this.body.get(record2.getTable()).contains(secondAttribute)) { // If the records have the right attributes
+                        String firstAttributeNumberless = Database.stripNumerals(firstAttribute);
+                        String secondAttributeNumberless = Database.stripNumerals(secondAttribute);
+                        if (record1.get(firstAttributeNumberless).equals(record2.get(secondAttributeNumberless))) {  // If the records have the same value for the attributes
                             matchingRecords.add(record1);
-                            matchingRecords.add(record2); // On ajoute les deux records au set
+                            matchingRecords.add(record2); // We add them to the set of matching records
                         } else {
-                            System.out.println("They are not the same in " + firstAttributewithoutNumber + " and " + secondAttributewithoutNumber);
-                            matchingRecords.remove(record1); // Sinon on les retire
+                            matchingRecords.remove(record1); // If they don't match, we remove them from the set
                             matchingRecords.remove(record2); 
-                            // Cela va permettre de ne garder que les records qui matchent pour la suite
+                            // This will ensure that the set only contains records that match all equalities
                         }
                     }
                 }
             }
         }
-        System.out.println("There are " + matchingRecords.size() + " matching records"); 
-        // Etape 3
         for (var equality : this.head) {
             var split = equality.split("=");
             String firstAttribute = split[0], secondAttribute = split[1];
-            for (var matchingRecord1 : matchingRecords) { // On parcourt les records qui matchent
-                for (var matchingRecord2 : matchingRecords) { // On parcourt les records qui matchent
-                    if (matchingRecord1 == matchingRecord2) continue; // On ne compare pas un record avec lui-même
-                    if (this.body.get(matchingRecord1.getTable()).contains(firstAttribute) && this.body.get(matchingRecord2.getTable()).contains(secondAttribute)) { // On ne compare que les records qui ont les bons attributs
-                        String firstAttributewithoutNumber=Database.withoutNumber(firstAttribute);
-                        String secondAttributewithoutNumber=Database.withoutNumber(secondAttribute);
-                        String value1 = (String) matchingRecord1.get(firstAttributewithoutNumber);
-                        String value2 = (String) matchingRecord2.get(secondAttributewithoutNumber); // On récupère les valeurs des attributs
-                        if (value1.equals(value2)) {
-                            System.out.println(value1 + " = " + value2);
-                            continue;
-                        } else if (value1.startsWith("nullvalue") && !value2.startsWith("nullvalue")) { 
-                            /* alteredTuples.add(new Record(matchingRecord1.toString().replace(value1, value2))); */
-                            matchingRecord1.set(firstAttributewithoutNumber, value2); // On remplace la valeur de l'attribut du record
-                            System.out.println("Altered " + matchingRecord1 + " to " + value2);
-                        } else if (!value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) {
-                            /* alteredTuples.add(new Record(matchingRecord2.toString().replace(value2, value1))); */
-                            matchingRecord2.set(secondAttributewithoutNumber, value1); // On remplace la valeur de l'attribut du record
-                            System.out.println("Altered " + matchingRecord2 + " to " + value1);
-                        } else if (value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) {
-                            if (Math.random() < 0.5) /* alteredTuples.add(new Record(matchingRecord1.toString().replace(value1, value2))); */ matchingRecord1.set(firstAttributewithoutNumber, value2);
-                            else /* alteredTuples.add(new Record(matchingRecord2.toString().replace(value2, value1))); */ matchingRecord2.set(secondAttribute, value1);
-                        } else {
-                            matchingRecord1.set(firstAttributewithoutNumber, "nullvalue" + Database.nullvalue); // On remplace la valeur de l'attribut du record
+            for (var matchingRecord1 : matchingRecords) { // Parse the matching records
+                for (var matchingRecord2 : matchingRecords) { // This is a double loop because we need to compare every record to every other record
+                    if (matchingRecord1 == matchingRecord2) continue; // Except itself
+                    if (this.body.get(matchingRecord1.getTable()).contains(firstAttribute) && this.body.get(matchingRecord2.getTable()).contains(secondAttribute)) { // Only compare records that have the right attributes
+                        String firstAttributeNumberless = Database.stripNumerals(firstAttribute); // We need to remove the numerals from the attributes
+                        String secondAttributeNumberless = Database.stripNumerals(secondAttribute); // Because the numerals are only used to differentiate attributes with the same name
+                        String value1 = (String) matchingRecord1.get(firstAttributeNumberless);
+                        String value2 = (String) matchingRecord2.get(secondAttributeNumberless); // We get the values of the attributes
+                        if (value1.equals(value2)) continue; // If the values are already equal, we don't need to do anything
+                        else if (value1.startsWith("nullvalue") && !value2.startsWith("nullvalue")) matchingRecord1.set(firstAttributeNumberless, value2); // If one of the values is a nullvalue, we replace it with the other value
+                        else if (!value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) matchingRecord2.set(secondAttributeNumberless, value1); // (...)
+                        else if (value1.startsWith("nullvalue") && value2.startsWith("nullvalue")) { // If both values are nullvalues, we replace one of them with the other
+                            if (Math.random() < 0.5) 
+                                matchingRecord1.set(firstAttributeNumberless, value2);
+                            else
+                                matchingRecord2.set(secondAttributeNumberless, value1);
+                        } else { // If none of the values are nullvalues, we replace both of them with a nullvalue
+                            matchingRecord1.set(firstAttributeNumberless, "nullvalue" + Database.nullvalue); // On remplace la valeur de l'attribut du record
                             Database.nullvalue++; // On incrémente le nullvalue
-                            System.out.println("Altered " + matchingRecord1 + " to nullvalue" + Database.nullvalue);
-                            matchingRecord2.set(secondAttributewithoutNumber, "nullvalue" + Database.nullvalue);
+                            matchingRecord2.set(secondAttributeNumberless, "nullvalue" + Database.nullvalue);
                             Database.nullvalue++;
-                            System.out.println("Altered " + matchingRecord2 + " to nullvalue" + Database.nullvalue);
                         }
                     }
                 }
             }
         }
-        this.previousNumberOfRecords = this.currentNumberOfRecords; // On sauvegarde le nombre de records
-        this.currentNumberOfRecords -= matchingRecords.size(); // On retire les records qui matchent
-        System.out.println(currentNumberOfRecords + " records left");
+        this.previousNumberOfRecords = this.currentNumberOfRecords; // Save the number of records
+        this.currentNumberOfRecords -= matchingRecords.size(); // Remove the matching records from the number of records
         return false;
-    }  
+    }
 
-
-    public TGD convertToTGD(){
-        List<List<String>> TGDbody = new ArrayList<>();
-        List<List<String>> TGDhead = new ArrayList<>();
-        for(var m : this.body.keySet()){//On crée le corps de la TGD
-            List<String> TGDm = new ArrayList<>();
-            TGDm.add(m);
-            for(var a : this.body.get(m)){//On ajoute le nom de la table, puis les clés 
-                TGDm.add(a);
+    /**
+     * Convert the EGD to a TGD.
+     * 
+     * @return the TGD corresponding to the EGD
+     */
+    public TGD convertToTGD() {
+        var tgdBody = new ArrayList<List<String>>();
+        var tgdHead = new ArrayList<List<String>>();
+        for (var m : this.body.keySet()) {
+            var tgdM = new ArrayList<String>();
+            tgdM.add(m);
+            for (var a : this.body.get(m))
+                tgdM.add(a);
+            tgdBody.add(tgdM);
+        }
+        for (var equality : this.equalities) {
+            var split = equality.split("=");
+            var leftEqual = split[0];
+            var rightEqual = split[1];
+            for (var cle : tgdBody) {
+                if (cle.contains(leftEqual))
+                    cle.set(cle.indexOf(leftEqual), rightEqual);
             }
-            TGDbody.add(TGDm);
         }
-        //On suppose que equalities ne contient qu'une seule égalité. 
-        for( var equality : this.equalities){//On ajoute les égalités au corps de la TGD en modifiant le nom des clés (ex : a1 = a2 -> remplacement de tous les a1 par des a2 dans le corps) 
-            String[] split = equality.split("=");
-            var leftequal= split[0];
-            var rightequal = split[1];
-            for(var cle : TGDbody){
-                if(cle.contains(leftequal)){
-                    cle.set(cle.indexOf(leftequal), rightequal);
-                    
-                }
-            }
+        for (var m : this.head) {
+            var tgdM = new ArrayList<String>();
+            tgdM.add("TEMP");
+            tgdM.add(m.split("=")[0]);
+            tgdM.add(m.split("=")[1]);
+            tgdHead.add(tgdM);
         }
-        for(var m : this.head){
-            List <String> TGDm = new ArrayList<>();
-            TGDm.add("TEMP"); 
-            TGDm.add(m.split("=")[0]);
-            TGDm.add(m.split("=")[1]);
-            TGDhead.add(TGDm);
-        }
-        return new TGD(TGDbody, TGDhead);
-
+        return new TGD(tgdBody, tgdHead);
     }
 }

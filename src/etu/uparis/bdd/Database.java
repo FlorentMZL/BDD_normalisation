@@ -154,7 +154,7 @@ public final class Database {
                     Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>(); // Liste des ensembles de tuples qui satisfont
                                                                         // le corps de la TGD
                     for (var b : tgd.getBody()) { // Pour chaque table dans le corps de la TGD
-                        var toFind =withoutNumber(b.get(0)); // On cherche la table dans le dictionnaire
+                        var toFind =stripNumerals(b.get(0)); // On cherche la table dans le dictionnaire
                         // Si la table existe et n'est pas vide, on l'ajoute à la liste des ensembles de
                         // tuples qui satisfont une partie du corps de la TGD
                         if (allTuples.get(toFind) != null && allTuples.get(toFind).size() != 0)
@@ -170,13 +170,13 @@ public final class Database {
                             if (!(tgd.hasBeenAltered(tuplesatisfying))) { // Si l'ensemble n'a pas été deja satisfait
                                 for (int i = 0; i < tgd.getHead().size(); i++) { // Pour chaque table de la tête
                                     var h = tgd.getHead().get(i);
-                                    if (allTuples.get(withoutNumber(h.get(0))) == null
-                                            || allTuples.get(withoutNumber(h.get(0))).size() == 0) { // Si la table est
+                                    if (allTuples.get(stripNumerals(h.get(0))) == null
+                                            || allTuples.get(stripNumerals(h.get(0))).size() == 0) { // Si la table est
                                                                                                    // vide, alors il
                                                                                                    // faut créer un
                                                                                                    // record pour
                                                                                                    // satisfaire la tête
-                                        allTuples.put(withoutNumber(h.get(0)), new HashSet<Record>());
+                                        allTuples.put(stripNumerals(h.get(0)), new HashSet<Record>());
                                         //creation de la table dans la bdd
                                         
                                         List<String> keys = new ArrayList<String>(); // Creation du record à ajouter
@@ -184,7 +184,7 @@ public final class Database {
                                         for (int j = 1; j < h.size(); j++) {
                                             // String s = "nullvalue";
                                             // Object o = s;
-                                            keys.add(withoutNumber(h.get(j)));// On met les clés
+                                            keys.add(stripNumerals(h.get(j)));// On met les clés
                                             values.add("nullvalue" + nullvalue); // On met toutes les valeurs à null. On
                                                                                  // egalisera celles qu'il faut en
                                                                                  // dessous
@@ -209,8 +209,8 @@ public final class Database {
                                                         for (var tuple : tuplesatisfying) { // On cherche le record qui
                                                                                             // appartient à la table
                                                                                             // concernée
-                                                            if (tuple.getTable().equals(withoutNumber(b.get(0)))) {
-                                                                values.set(j - 1, tuple.get(withoutNumber(h.get(j))));// On
+                                                            if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
+                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On
                                                                                                                     // met
                                                                                                                     // a
                                                                                                                     // jour
@@ -229,19 +229,19 @@ public final class Database {
                                             }
                                         }
                                         Record r = new Record(keys, values);
-                                        allTuples.get(withoutNumber(h.get(0))).add(r); // Ajouter le record à l'ensemble
+                                        allTuples.get(stripNumerals(h.get(0))).add(r); // Ajouter le record à l'ensemble
                                                                                      // des records de la table
                                         System.out.println("On a ajouté le record " + r + " à la table " + h.get(0));
                                         boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
-                                            if (tabl.getName().equals(withoutNumber(h.get(0)))) {
+                                            if (tabl.getName().equals(stripNumerals(h.get(0)))) {
                                                 tabl.addRecord(r);
                                                 existe2 = true; 
                                                 break; 
                                             }
                                         }
                                         if (existe2 == false){
-                                            Table ajoute = new Table(withoutNumber(h.get(0)), keys);
+                                            Table ajoute = new Table(stripNumerals(h.get(0)), keys);
                                             ajoute.addRecord(r);
                                             this.getTables().add(ajoute);
                                             
@@ -250,7 +250,7 @@ public final class Database {
                                     } else {
                                         boolean satisfait = false;
                                         boolean egal = true;
-                                        for (var t : allTuples.get(withoutNumber(h.get(0)))) { // Pour les tuples
+                                        for (var t : allTuples.get(stripNumerals(h.get(0)))) { // Pour les tuples
                                                                                              // correspondant à la table
                                                                                              // concernée dans une
                                                                                              // partie de la tête :
@@ -277,7 +277,7 @@ public final class Database {
                                                                                                 // satisfont le corps
                                                                 if (satisfait)
                                                                     break;
-                                                                if (tuple.getTable().equals(withoutNumber(b.get(0)))) { // si
+                                                                if (tuple.getTable().equals(stripNumerals(b.get(0)))) { // si
                                                                                                                       // ce
                                                                                                                       // tuple
                                                                                                                       // appartient
@@ -285,8 +285,8 @@ public final class Database {
                                                                                                                       // la
                                                                                                                       // table
                                                                                                                       // concernée
-                                                                    if (tuple.get(withoutNumber(h.get(j))) != t
-                                                                            .get(withoutNumber(h.get(j)))) { // si la
+                                                                    if (tuple.get(stripNumerals(h.get(j))) != t
+                                                                            .get(stripNumerals(h.get(j)))) { // si la
                                                                                                            // valeur de
                                                                                                            // la clé
                                                                                                            // dans le
@@ -325,7 +325,7 @@ public final class Database {
                                         for (int j = 1; j < h.size(); j++) {
                                             // String s = "nullvalue";
                                             // Object o = s;
-                                            keys.add(withoutNumber(h.get(j)));
+                                            keys.add(stripNumerals(h.get(j)));
                                             values.add("nullvalue" + nullvalue);
                                             nullvalue++;
                                         }
@@ -344,8 +344,8 @@ public final class Database {
                                                         for (var tuple : tuplesatisfying) {// On cherche le record qui
                                                                                            // appartient la table
                                                                                            // concernée
-                                                            if (tuple.getTable().equals(withoutNumber(b.get(0)))) {
-                                                                values.set(j - 1, tuple.get(withoutNumber(h.get(j))));// On
+                                                            if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
+                                                                values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On
                                                                                                                     // met
                                                                                                                     // a
                                                                                                                     // jour
@@ -364,20 +364,20 @@ public final class Database {
                                             }
                                         }
                                         Record r = new Record(keys, values);
-                                        allTuples.get(withoutNumber(h.get(0))).add(r);// ajouter le record à l'ensemble
+                                        allTuples.get(stripNumerals(h.get(0))).add(r);// ajouter le record à l'ensemble
                                                                                     // des records de la table
                                         System.out.println("On a ajouté le record " + r + " à la table " + h.get(0));
 
                                         boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
-                                            if (tabl.getName().equals(withoutNumber(h.get(0)))) {
+                                            if (tabl.getName().equals(stripNumerals(h.get(0)))) {
                                                 tabl.addRecord(r);
                                                 existe2 = true; 
                                                 break; 
                                             }
                                         }
                                         if (existe2 == false){
-                                            Table ajoute = new Table(withoutNumber(h.get(0)), keys);
+                                            Table ajoute = new Table(stripNumerals(h.get(0)), keys);
                                             ajoute.addRecord(r);
                                             this.getTables().add(ajoute);
                                             
@@ -426,9 +426,9 @@ public final class Database {
                 Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for (var b : tgd.getBody()) {
                     System.out.println("On regarde la table " + b.get(0));
-                    if (allTuples.get(withoutNumber(b.get(0))) != null
-                            && allTuples.get(withoutNumber(b.get(0))).size() != 0) {
-                        ontuples.add(allTuples.get(withoutNumber(b.get(0))));
+                    if (allTuples.get(stripNumerals(b.get(0))) != null
+                            && allTuples.get(stripNumerals(b.get(0))).size() != 0) {
+                        ontuples.add(allTuples.get(stripNumerals(b.get(0))));
                     }
 
                 }
@@ -442,15 +442,15 @@ public final class Database {
                         if (!(tgd.hasBeenAltered(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
                             for (int i = 0; i < tgd.getHead().size(); i++) {// Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
-                                if (allTuples.get(withoutNumber(h.get(0))) == null) {
-                                    allTuples.put(withoutNumber(h.get(0)), new HashSet<Record>());
+                                if (allTuples.get(stripNumerals(h.get(0))) == null) {
+                                    allTuples.put(stripNumerals(h.get(0)), new HashSet<Record>());
                                 }
                                 List<String> keys = new ArrayList<String>();
                                 List<Object> values = new ArrayList<Object>();
                                 for (int j = 1; j < h.size(); j++) {
                                     // String s = "nullvalue";
                                     // Object o = s;
-                                    keys.add(withoutNumber(h.get(j)));
+                                    keys.add(stripNumerals(h.get(j)));
                                     values.add("nullvalue" + nullvalue);
                                     nullvalue++;
                                 }
@@ -465,8 +465,8 @@ public final class Database {
                                             if (t.equals(h.get(j))) {// si il est egal à la clé
                                                 for (var tuple : tuplesatisfying) {// On cherche le record qui
                                                                                    // appartient la table concernée
-                                                    if (tuple.getTable().equals(withoutNumber(b.get(0)))) {
-                                                        values.set(j - 1, tuple.get(withoutNumber(h.get(j))));// On met a
+                                                    if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
+                                                        values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On met a
                                                                                                             // jour la
                                                                                                             // valeur
                                                                                                             // liée a la
@@ -480,19 +480,19 @@ public final class Database {
                                     }
                                 }
                                 Record r = new Record(keys, values);
-                                allTuples.get(withoutNumber(h.get(0))).add(r);// ajouter le record à l'ensemble des
+                                allTuples.get(stripNumerals(h.get(0))).add(r);// ajouter le record à l'ensemble des
                                                                             // records de la table
                                 System.out.println("On a ajouté le record " + r + " à la table " + h.get(0));
                                 boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
-                                            if (tabl.getName().equals(withoutNumber(h.get(0)))) {
+                                            if (tabl.getName().equals(stripNumerals(h.get(0)))) {
                                                 tabl.addRecord(r);
                                                 existe2 = true; 
                                                 break; 
                                             }
                                         }
                                         if (existe2 == false){
-                                            Table ajoute = new Table(withoutNumber(h.get(0)), keys);
+                                            Table ajoute = new Table(stripNumerals(h.get(0)), keys);
                                             ajoute.addRecord(r);
                                             this.getTables().add(ajoute);
                                             
@@ -539,9 +539,9 @@ public final class Database {
                 Set<Set<Record>> applyOnTuples = new HashSet<Set<Record>>();//
                 for (var b : tgd.getBody()) {
                     System.out.println("On regarde la table " + b.get(0));
-                    if (allTuples.get(withoutNumber(b.get(0))) != null
-                            && allTuples.get(withoutNumber(b.get(0))).size() != 0) {
-                        ontuples.add(allTuples.get(withoutNumber(b.get(0))));
+                    if (allTuples.get(stripNumerals(b.get(0))) != null
+                            && allTuples.get(stripNumerals(b.get(0))).size() != 0) {
+                        ontuples.add(allTuples.get(stripNumerals(b.get(0))));
                     }
 
                 }
@@ -556,8 +556,8 @@ public final class Database {
                         if (!(tgd.hasBeenAltered(tuplesatisfying))) {// Si l'ensemble n'a pas été deja satisfait :
                             for (int i = 0; i < tgd.getHead().size(); i++) {// Pour chaque table de la tête
                                 var h = tgd.getHead().get(i);
-                                if (allTuples.get(withoutNumber(h.get(0))) == null) {
-                                    allTuples.put(withoutNumber(h.get(0)), new HashSet<Record>());
+                                if (allTuples.get(stripNumerals(h.get(0))) == null) {
+                                    allTuples.put(stripNumerals(h.get(0)), new HashSet<Record>());
                                 }
                                 List<String> keys = new ArrayList<String>();
                                 List<Object> values = new ArrayList<Object>();
@@ -566,7 +566,7 @@ public final class Database {
                                     // Object o = s;
                                      
                                    
-                                    keys.add(withoutNumber(h.get(j)));
+                                    keys.add(stripNumerals(h.get(j)));
                                     
                                    
                                     values.add("nullvalue" + nullvalue);
@@ -582,11 +582,11 @@ public final class Database {
                                             if (egal == false)
                                                 break;
                                             if (t.equals(h.get(j))) {// si il est egal à la clé
-                                                egalise.add(withoutNumber(h.get(j)));
+                                                egalise.add(stripNumerals(h.get(j)));
                                                 for (var tuple : tuplesatisfying) {// On cherche le record qui
                                                                                    // appartient la table concernée
-                                                    if (tuple.getTable().equals(withoutNumber(b.get(0)))) {
-                                                        values.set(j - 1, tuple.get(withoutNumber(h.get(j))));// On met a
+                                                    if (tuple.getTable().equals(stripNumerals(b.get(0)))) {
+                                                        values.set(j - 1, tuple.get(stripNumerals(h.get(j))));// On met a
                                                                                                             // jour la
                                                                                                             // valeur
                                                                                                             // liée a la
@@ -623,7 +623,7 @@ public final class Database {
                                 }
                                 Record r; 
                                 System.out.println(h.get(0));
-                                if(withoutNumber(h.get(0)).equals("TEMP")){
+                                if(stripNumerals(h.get(0)).equals("TEMP")){
                                     List<String> keys2 = List.of("temp1","temp2");
                                      r = new Record(keys2, values);
                                 }
@@ -631,12 +631,12 @@ public final class Database {
                                      r = new Record(keys, values);
                                 }
                                 
-                                allTuples.get(withoutNumber(h.get(0))).add(r);// ajouter le record à l'ensemble des
+                                allTuples.get(stripNumerals(h.get(0))).add(r);// ajouter le record à l'ensemble des
                                                                             // records de la table
                                 System.out.println("On a ajouté le record " + r + " à la table " + h.get(0));
                                 boolean existe2 = false;
                                         for (var tabl : this.getTables()) { // ajouter le record à la base de données
-                                            if (tabl.getName().equals(withoutNumber(h.get(0)))) {
+                                            if (tabl.getName().equals(stripNumerals(h.get(0)))) {
                                                 tabl.addRecord(r);
                                                 existe2 = true; 
                                                 break; 
@@ -648,10 +648,10 @@ public final class Database {
                                             }
                                             Table ajoute; 
                                             if(h.get(0).equals("TEMP")){
-                                                 ajoute = new Table(withoutNumber(h.get(0)), List.of("temp1","temp2"));
+                                                 ajoute = new Table(stripNumerals(h.get(0)), List.of("temp1","temp2"));
                                             }
                                             else{
-                                                 ajoute = new Table(withoutNumber(h.get(0)), keys);
+                                                 ajoute = new Table(stripNumerals(h.get(0)), keys);
                                             }
                                             ajoute.addRecord(r);
                                             this.getTables().add(ajoute);
@@ -750,7 +750,7 @@ public final class Database {
             return ("");
         }
     }
-    public static String withoutNumber(String s){//Pour passer de attribut1 à attribut sans le numéro
+    public static String stripNumerals(String s){//Pour passer de attribut1 à attribut sans le numéro
         for(int i=0;i<s.length();i++){
             if(Character.isDigit(s.charAt(i))){
                 return s.substring(0,i);

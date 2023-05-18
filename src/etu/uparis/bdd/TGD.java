@@ -95,19 +95,6 @@ public class TGD extends Constraint {
      */
     @Override
     public boolean apply(Database database) {
-        /** boolean tupleFound = true; 
-        for (var pairs : this.body) { // Iterate over all pairs of (table, key) in the body
-            if (tupleFound) tupleFound = false; else return false; // If the tuple has not been found yet, check if it is in the database
-            for (var table : database.getTables()) { // Iterate over all tables in the database
-                if (table.getName().equals(list.get(0))) { // If the table name is the same as the first element of the list (the table name)
-                    if (table.getRecords().size() != 0) { // If the table is not empty
-                        tupleFound = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return tupleFound; **/
         for (var pairs : this.body) { // Iterate over all pairs of (table, key) in the body
             String tableName = pairs.get(0);
             String key = pairs.get(1);
@@ -129,19 +116,16 @@ public class TGD extends Constraint {
         }
         return true; // All tuples found in the database
     }
-    @Override //toString
+    
+    @Override
     public String toString() {
         String result = "TGD: ";
-        for(var list : this.body) {
-            for (var string : list) {
-                result += string + " ";
-            }
+        for (var list : this.body) {
+            for (var string : list) result += string + " ";
         }
         result += " -> ";
-        for(var list : this.head) {
-            for (var string : list) {
-                result += string + " ";
-            }
+        for (var list : this.head) {
+            for (var string : list) result += string + " ";
         }
         return result;
     }
