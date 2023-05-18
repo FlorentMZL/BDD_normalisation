@@ -38,7 +38,7 @@ public final class Main {
         System.out.println(database);
 
         System.out.println("\nbody satisfied ? \n");
-        System.out.println(tgdOblivious.satisfyingBody(database));
+        System.out.println(tgdOblivious.validate(database));
         database.standardChase(List.of(tgd1, tgd2, tgdOblivious));
         //database.obliviousChase(List.of( tgdOblivious), 2);
         //database.obliviousSkolemChase(List.of(tgdOblivious));

@@ -705,13 +705,13 @@ public final class Database {
         return parts[0];
     }
 
-    private static Set<Set<Record>> genererCombinaisons(List<HashSet<Record>> ontuples) {
+    private static Set<Set<Record>> genererCombinaisons(List<Set<Record>> ontuples) {
         Set<Set<Record>> combinaisons = new HashSet<Set<Record>>();
         genererCombinaisonsRec(ontuples, 0, new HashSet<Record>(), combinaisons);
         return combinaisons;
     }
 
-    private static void genererCombinaisonsRec(List<HashSet<Record>> ontuples, int index,
+    private static void genererCombinaisonsRec(List<Set<Record>> ontuples, int index,
             Set<Record> combinaisonActuelle,
             Set<Set<Record>> combinaisons) {
         if (index == ontuples.size()) {
