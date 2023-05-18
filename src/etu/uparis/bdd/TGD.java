@@ -129,4 +129,20 @@ public class TGD extends Constraint {
         }
         return true; // All tuples found in the database
     }
+    @Override //toString
+    public String toString() {
+        String result = "TGD: ";
+        for(var list : this.body) {
+            for (var string : list) {
+                result += string + " ";
+            }
+        }
+        result += " -> ";
+        for(var list : this.head) {
+            for (var string : list) {
+                result += string + " ";
+            }
+        }
+        return result;
+    }
 }

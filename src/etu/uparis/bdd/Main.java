@@ -43,7 +43,7 @@ public final class Main {
 */
         System.out.println("\nbody satisfied ? \n");
         // System.out.println(tgdOblivious.apply(database));
-        // database.standardChase(List.of(tgd1, tgd2, tgdOblivious));
+       
 
 
         /*----------------EXEMPLE DU SUJET-----------------------*/
@@ -52,15 +52,20 @@ public final class Main {
         Table R = new Table("R", List.of("A", "B"));
         Table P = new Table("P", List.of("B", "A"));
         Table Q = new Table("Q", List.of("A", "B", "G"));
-        TGD c1 = new TGD(List.of(List.of("R=R", "A=A1", "B=B1")), List.of(List.of("Q=Q1", "A=A1", "B=B1", "G=G1")));
-        TGD c2  = new TGD(List.of(List.of("Q=Q1", "A=A1", "B=B1", "G=G1")),List.of(List.of("P=P1", "B=B1", "A=A2")));
+        TGD c1 = new TGD(List.of(List.of("R1", "A1", "B1")), List.of(List.of("Q1", "A1", "B1", "G1")));
+        TGD c2  = new TGD(List.of(List.of("Q1", "A1", "B1", "G1")),List.of(List.of("P1", "B1", "A2")));
         EGD c3 = new EGD(Map.of("R", List.of("A1", "B1"), "P", List.of("B2", "A2")), Set.of("B1=B2"), Set.of("A1=A2"));
+        TGD c4 = new TGD(List.of(List.of("R1", "A1", "B1")), List.of(List.of("S1", "B1", "A1")));
+       
+
         database.addTable(R);
         database.addTable(P);
         database.addTable(Q);
         R.addRecord("{ A = A1, B = B1 }");
+        database.skolemEGD(List.of(c1, c2, c3));
         System.out.println(database);
-        database.standardChase(List.of(c1, c2, c3));
+       // database.standardChase(List.of(c1, c2,c4));
+       // database.skolemEGD(List.of(c1, c2, c3));
 
         /*------------------------------------------------------*/
 
