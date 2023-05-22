@@ -622,7 +622,7 @@ public final class Database {
                 }
             } else {
                 if (temp2str.startsWith("nullvalue")) {
-                    // On cherche toutes les occurences de temp1str et on les remplace par temp2str
+                    // On cherche toutes les occurences de temp2str et on les remplace par temp1str
                     for (var table : this.getTables()) {
                         for (var record2 : table.getRecords()) {
                             for (var key : record2.getAttributes()) {
@@ -648,17 +648,12 @@ public final class Database {
                 }
             }
         }
+        // On supprime la table TEMP
+        this.getTables().remove(tempTable);
+        
     }
 
-    private static String afterequal(String s) {
-        String[] parts = s.split("=");
-        return parts[1];
-    }
-
-    private static String beforeequal(String s) {
-        String[] parts = s.split("=");
-        return parts[0];
-    }
+   
 
     private static Set<Set<Record>> generateCombinations(List<Set<Record>> tupleSets) {
         Set<Set<Record>> combinaisons = new HashSet<Set<Record>>();
